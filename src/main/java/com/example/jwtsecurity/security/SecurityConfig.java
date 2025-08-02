@@ -2,11 +2,13 @@ package com.example.jwtsecurity.security;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.http.HttpMethod;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
+import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
-import org.springframework.security.config.annotation.web.builders.HttpSecurity;
-import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
@@ -14,26 +16,33 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 @EnableWebSecurity
 public class SecurityConfig {
 
+    @Bean                                    // JWT filtresini Spring’e veriyoruz
+    public JwtAuthFilter jwtAuthFilter() {
+        return new JwtAuthFilter();
+    }
+
+    @Bean                                    // Şifre encoder (BCrypt)
+    public PasswordEncoder passwordEncoder() {
+        return new BCryptPasswordEncoder();
+    }
+
     @Bean
-    SecurityFilterChain filterChain(HttpSecurity http, JwtAuthFilter jwtAuthFilter) throws Exception {
+    public AuthenticationManager authenticationManager(
+            AuthenticationConfiguration config) throws Exception {
+        return config.getAuthenticationManager();
+    }
+
+    @Bean
+    public SecurityFilterChain filterChain(HttpSecurity http,
+                                           JwtAuthFilter jwtAuthFilter) throws Exception {
+
         http
-                //  csrf  tamamen kapat
-                .csrf(AbstractHttpConfigurer::disable)
-
-                // oturum tutma (jwt için)
+                .csrf(csrf -> csrf.disable())
                 .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-
-                // yetkilendirme
                 .authorizeHttpRequests(auth -> auth
-                        // register & login serbest (POST/GET farketmez)
                         .requestMatchers("/api/auth/**").permitAll()
-                        // H2 consolea da izin verirsen:
-                        //.requestMatchers("/h2-console/**").permitAll()
-                        // diğer tüm istekler token ile
                         .anyRequest().authenticated()
                 )
-
-                // JWT filtresini yerleştir
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();

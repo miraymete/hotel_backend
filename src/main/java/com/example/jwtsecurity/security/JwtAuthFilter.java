@@ -27,13 +27,13 @@ public class JwtAuthFilter extends OncePerRequestFilter {
             throws ServletException, IOException {
 
         String path = request.getServletPath();
-        // 1) /api/auth/** altındakileri geç:
+        // 1)/api/auth/** altındakileri geç
         if (path.startsWith("/api/auth/")) {
             filterChain.doFilter(request, response);
             return;
         }
 
-        // 2) Authorization header’dan token’ı çek:
+        // 2)authorization header’dan token’ı çek
         String authHeader = request.getHeader("Authorization");
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
@@ -63,7 +63,7 @@ public class JwtAuthFilter extends OncePerRequestFilter {
             return;
         }
 
-        // 3) Zinciri devam ettir
+        // 3)zinciri devam ettir
         filterChain.doFilter(request, response);
     }
 }
