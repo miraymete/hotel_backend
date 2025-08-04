@@ -28,6 +28,7 @@ public class UserService {
         user.setPassword(
                 passwordEncoder.encode(request.getPassword())
         );
+        user.setRole(request.getRole());              // varsayılan olarak ROLE_USER???
         // 3) kaydet
         userRepository.save(user);
     }

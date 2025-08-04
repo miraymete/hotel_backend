@@ -20,13 +20,24 @@ public class JwtAuthFilter extends OncePerRequestFilter {
 
     private static final String SECRET_KEY = "my_secret_key";
 
+
     @Override
     protected void doFilterInternal(HttpServletRequest request,
                                     HttpServletResponse response,
                                     FilterChain filterChain)
             throws ServletException, IOException {
-
+        // Swagger pathleri için filtreyi atla!!!!!!!!!!!!!!1
         String path = request.getServletPath();
+        if (path.startsWith("/swagger-ui")
+                || path.startsWith("/v3/api-docs")
+                || path.startsWith("/swagger-resources")
+                || path.startsWith("/webjars")
+                || path.equals("/swagger-ui.html")) {
+            filterChain.doFilter(request, response);
+            return;
+        }
+
+
         // 1)/api/auth/** altındakileri geç
         if (path.startsWith("/api/auth/")) {
             filterChain.doFilter(request, response);
