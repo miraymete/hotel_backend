@@ -7,15 +7,20 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 public class HelloController {
 
-    @GetMapping
-    @PreAuthorize("hasRole('ADMIN')")   // sadece ROLE_ADMIN erişebilir
-    public String adminHello() {
-        return "Merhaba Admin!";
+    @GetMapping("/")
+    public String index() {
+        return "Herkese açık endpoint";
     }
 
     @GetMapping("/user")
-    @PreAuthorize("hasAnyRole('USER','ADMIN')")
+    @PreAuthorize("hasAnyRole('USER', 'ADMIN')") // user ve admin girebilir
     public String userHello() {
         return "Merhaba User ya da Admin!";
+    }
+
+    @GetMapping("/admin")
+    @PreAuthorize("hasRole('ADMIN')") // Sadece admin girebilir
+    public String adminHello() {
+        return "Merhaba Admin!";
     }
 }
