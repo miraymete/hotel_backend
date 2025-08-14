@@ -24,8 +24,8 @@ public class SecurityConfig {
 
     // JWT filtremiz
     @Bean
-    public JwtAuthFilter jwtAuthFilter() {
-        return new JwtAuthFilter();
+    public JwtAuthFilter jwtAuthFilter(CustomUserDetailsService userDetailsService) {
+        return new JwtAuthFilter(userDetailsService);
     }
 
     // Şifreleyici

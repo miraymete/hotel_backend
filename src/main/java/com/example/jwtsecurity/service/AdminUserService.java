@@ -5,68 +5,63 @@ import com.example.jwtsecurity.dto.*;
 import com.example.jwtsecurity.model.User;
 import com.example.jwtsecurity.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 
 @Service
-@RequiredArgsConstructor
 public class AdminUserService {
-
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
 
+    @Autowired
+    public AdminUserService(UserRepository userRepository, PasswordEncoder passwordEncoder) {
+        this.userRepository = userRepository;
+        this.passwordEncoder = passwordEncoder;
+    }
     public List<UserResponse> list() {
-        return userRepository.findAll()
-                .stream()
-                .map(u -> new UserResponse(u.getId(), u.getUsername(), u.getRole()))
-                .toList();
+        return userRepository.findAll().stream().map(this::toResponse).toList();
     }
 
     public UserResponse create(CreateUserRequest req) {
-        if (userRepository.existsByUsername(req.getUsername())) {
-            throw new IllegalArgumentException("kullanıcı adı zaten var");
-        }
         User u = new User();
         u.setUsername(req.getUsername());
         u.setPassword(passwordEncoder.encode(req.getPassword()));
-        u.setRole((req.getRole() == null || req.getRole().isBlank()) ? "USER" : req.getRole().toUpperCase());
-
-        u = userRepository.save(u);
-        return new UserResponse(u.getId(), u.getUsername(), u.getRole());
+        u.setRole(req.getRole() == null ? "USER" : req.getRole());
+        return toResponse(userRepository.save(u));
     }
 
-    public UserResponse get(Long id) {
-        User u = userRepository.findById(id).orElseThrow();
-        return new UserResponse(u.getId(), u.getUsername(), u.getRole());
+    public UserResponse getById(Long id) {
+        User u = userRepository.findById(id).orElseThrow(() -> new RuntimeException("User not found"));
+        return toResponse(u);
     }
 
     public UserResponse update(Long id, UpdateUserRequest req) {
-        User u = userRepository.findById(id).orElseThrow();
-
-        if (req.getUsername() != null && !req.getUsername().isBlank()) {
-            u.setUsername(req.getUsername());
-        }
-        if (req.getRole() != null && !req.getRole().isBlank()) {
-            u.setRole(req.getRole().toUpperCase());
-        }
-
-        u = userRepository.save(u);
-        return new UserResponse(u.getId(), u.getUsername(), u.getRole());
+        User u = userRepository.findById(id).orElseThrow(() -> new RuntimeException("User not found"));
+        if (req.getUsername() != null) u.setUsername(req.getUsername());
+        if (req.getRole() != null) u.setRole(req.getRole());
+        return toResponse(userRepository.save(u));
     }
 
     public void delete(Long id) {
-        if (!userRepository.existsById(id)) {
-            throw new IllegalArgumentException("kullanıcı bulunamadı");
-        }
         userRepository.deleteById(id);
     }
 
     public void resetPassword(Long id, String newPassword) {
-        User u = userRepository.findById(id).orElseThrow();
+        User u = userRepository.findById(id).orElseThrow(() -> new RuntimeException("User not found"));
         u.setPassword(passwordEncoder.encode(newPassword));
         userRepository.save(u);
     }
+
+    private UserResponse toResponse(User u) {
+        UserResponse r = new UserResponse();
+        r.setId(u.getId());
+        r.setUsername(u.getUsername());
+        r.setRole(u.getRole());
+        return r;
+    }
 }
+
 //yönetici kullanıcı işlemleri listeleme oluşturma güncelleme silme
