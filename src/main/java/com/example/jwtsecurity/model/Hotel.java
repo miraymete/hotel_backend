@@ -17,13 +17,13 @@ public class Hotel {
     @Column(nullable = false) private String city;
     @Column(nullable = false) private int stars; // 1..5
     // ---- EKLENEN ALANLAR ----
-    @Column private String region;        // ilçe/bölge
+    @Column private String region;        // ilçe bölge
     @Column private String country;       // ülke
 
     @Column(precision = 10, scale = 2)
     private BigDecimal pricePerNight;     // gecelik fiyat
 
-    @Column private String currency;      // TL, EUR...
+    @Column private String currency;      // TL EUR
     @Column private Double ratingScore;   // 0..10
     @Column private String ratingLabel;   // "Fevkalade"
     @Column private Integer reviewCount;  // 3124 gibi

@@ -19,7 +19,7 @@ import java.io.IOException;
 public class JwtAuthFilter extends OncePerRequestFilter {
 
     private final CustomUserDetailsService userDetailsService;
-    private static final String SECRET_KEY = "my_secret_key";
+    private static final String SECRET_KEY = "mySecretKey";
 
     // <<< Lombok yerine manuel constructor
     public JwtAuthFilter(CustomUserDetailsService userDetailsService) {
