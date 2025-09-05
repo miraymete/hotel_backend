@@ -16,7 +16,7 @@
         <relativePath/> <!-- lookup parent from repository -->
     </parent>
     <groupId>com.example</groupId>
-    <artifactId>jwtsecurity</artifactId>
+    <artifactId>hotel</artifactId>
     <version>0.0.1-SNAPSHOT</version>
     <name>jwtsecurity</name>
     <description>jwtsecurity</description>
