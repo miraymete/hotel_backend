@@ -1,0 +1,18 @@
+{
+  "version": 2,
+  "builds": [
+    {
+      "src": "target/hotel-0.0.1-SNAPSHOT.jar",
+      "use": "@vercel/java"
+    }
+  ],
+  "routes": [
+    {
+      "src": "/(.*)",
+      "dest": "/target/hotel-0.0.1-SNAPSHOT.jar"
+    }
+  ],
+  "env": {
+    "SPRING_PROFILES_ACTIVE": "production"
+  }
+}

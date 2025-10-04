@@ -7,6 +7,7 @@ import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import org.springframework.lang.NonNull;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
@@ -15,23 +16,31 @@ import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
 
+// jwt auth filter giren isteklerde bearer token kontrolü yapar ve auth context kurar
 @Component
 public class JwtAuthFilter extends OncePerRequestFilter {
 
     private final CustomUserDetailsService userDetailsService;
     private static final String SECRET_KEY = "mySecretKey";
 
-    // <<< Lombok yerine manuel constructor
+    // lombok yerine manuel constructor kullanıldı
     public JwtAuthFilter(CustomUserDetailsService userDetailsService) {
         this.userDetailsService = userDetailsService;
     }
 
     @Override
-    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain chain)
+    protected void doFilterInternal(@NonNull HttpServletRequest request, @NonNull HttpServletResponse response, @NonNull FilterChain chain)
             throws ServletException, IOException {
 
         String path = request.getServletPath();
-        if (path.startsWith("/api/auth/") || path.startsWith("/swagger-ui") || path.startsWith("/v3/api-docs")) {
+        String requestURI = request.getRequestURI();
+        // debug için temel yol ve metod bilgisi yazdırılır
+        System.out.println("JWT Filter - Path: " + path + ", URI: " + requestURI + ", Method: " + request.getMethod());
+        
+        if (path.startsWith("/api/auth/") || path.startsWith("/swagger-ui") || path.startsWith("/v3/api-docs") ||
+            requestURI.startsWith("/api/auth/") || requestURI.startsWith("/swagger-ui") || requestURI.startsWith("/v3/api-docs")) {
+            // auth dışı yollar filtreyi atlar
+            System.out.println("JWT Filter - Allowing path: " + path + " (URI: " + requestURI + ")");
             chain.doFilter(request, response);
             return;
         }

@@ -2,6 +2,8 @@ package com.example.jwtsecurity.controller;
 
 import com.example.jwtsecurity.dto.LoginRequest;
 import com.example.jwtsecurity.dto.RegisterRequest;
+import com.example.jwtsecurity.dto.AuthResponse;
+import com.example.jwtsecurity.dto.UserResponseDto;
 import com.example.jwtsecurity.model.User;
 import com.example.jwtsecurity.repository.UserRepository;
 import com.example.jwtsecurity.security.JwtUtil;
@@ -16,9 +18,20 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 
+// auth controller jwt tabanlı giriş ve kayıt işlemleri
 @RestController
 @RequestMapping("/api/auth")
+@CrossOrigin(origins = {
+    "http://localhost:3000",
+    "http://localhost:5173", 
+    "http://localhost:5174",
+    "http://127.0.0.1:5173",
+    "http://127.0.0.1:5174"
+}, allowCredentials = "true")
 public class AuthController {
+
+    // bu controller login ve register için dto kullanır ve class tabanlı cevap döndürür
+    // success durumunda authresponse döndürülür error durumunda json map döndürülür
 
     // spring security authentication manager
     private final AuthenticationManager authenticationManager;
@@ -39,9 +52,9 @@ public class AuthController {
         this.userRepository = userRepository;
     }
 
-    /**  LOGIN  */
+    // login endpoint istek gövdesinden loginrequest alır doğrular ve jwt üretir
     @PostMapping("/login")
-    public ResponseEntity<Map<String, Object>> login(@RequestBody LoginRequest loginRequest) {
+    public ResponseEntity<Object> login(@RequestBody LoginRequest loginRequest) {
 
         // kullanıcı adı ve şifre ile authentication token oluştur
         Authentication authRequest =
@@ -60,40 +73,42 @@ public class AuthController {
         Optional<User> userOpt = userRepository.findByUsername(loginRequest.getUsername());
         User user = userOpt.orElseThrow(() -> new RuntimeException("Kullanıcı bulunamadı"));
 
-        // frontende gönderilecek response objesi oluştur
-        Map<String, Object> response = new HashMap<>();
-        response.put("token", token);
-        response.put("user", Map.of(
-            "id", user.getId(),
-            "username", user.getUsername(),
-            "role", user.getRole()
-        ));
+        // UserResponseDto oluştur
+        UserResponseDto userDto = new UserResponseDto(user.getId(), user.getUsername(), user.getRole());
+        
+        // auth response oluştur ve frontende gönder
+        AuthResponse authResponse = new AuthResponse(token, userDto);
 
-        return ResponseEntity.ok(response);
+        return ResponseEntity.ok(authResponse);
     }
 
-    /**  REGISTER  */
+    // register endpoint yeni kullanıcı oluşturur ve jwt ile birlikte döner
     @PostMapping("/register")
-    public ResponseEntity<Map<String, Object>> register(@RequestBody RegisterRequest request) {
-        // yeni kullanıcıyı veritabanına kaydet
-        userService.register(request);
-        
-        // kayıt sonrası otomatik giriş için jwt token oluştur
-        String token = jwtUtil.generateToken(request.getUsername());
-        
-        // kayıt edilen kullanıcının bilgilerini veritabanından getir
-        Optional<User> userOpt = userRepository.findByUsername(request.getUsername());
-        User user = userOpt.orElseThrow(() -> new RuntimeException("Kullanıcı bulunamadı"));
+    public ResponseEntity<Object> register(@RequestBody RegisterRequest request) {
+        try {
+            // yeni kullanıcıyı veritabanına kaydet
+            userService.register(request);
+            
+            // kayıt sonrası otomatik giriş için jwt token oluştur
+            String token = jwtUtil.generateToken(request.getUsername());
+            
+            // kayıt edilen kullanıcının bilgilerini veritabanından getir
+            Optional<User> userOpt = userRepository.findByUsername(request.getUsername());
+            User user = userOpt.orElseThrow(() -> new RuntimeException("Kullanıcı bulunamadı"));
 
-        // frontend'e gönderilecek response objesi oluştur
-        Map<String, Object> response = new HashMap<>();
-        response.put("token", token);
-        response.put("user", Map.of(
-            "id", user.getId(),
-            "username", user.getUsername(),
-            "role", user.getRole()
-        ));
+            // UserResponseDto oluştur
+            UserResponseDto userDto = new UserResponseDto(user.getId(), user.getUsername(), user.getRole());
+            
+            // auth response oluştur ve frontende gönder
+            AuthResponse authResponse = new AuthResponse(token, userDto);
 
-        return ResponseEntity.ok(response);
+            return ResponseEntity.ok(authResponse);
+        } catch (Exception e) {
+            // hata durumunda sade bir hata jsonu döndür
+            Map<String, Object> errorResponse = new HashMap<>();
+            errorResponse.put("error", true);
+            errorResponse.put("message", e.getMessage());
+            return ResponseEntity.badRequest().body(errorResponse);
+        }
     }
 }

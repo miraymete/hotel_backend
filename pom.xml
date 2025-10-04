@@ -58,14 +58,12 @@
             <scope>runtime</scope>
         </dependency>
         
-        <!-- PostgreSQL driver (comment out for now) -->
-        <!--
+        <!-- PostgreSQL driver -->
         <dependency>
             <groupId>org.postgresql</groupId>
             <artifactId>postgresql</artifactId>
             <scope>runtime</scope>
         </dependency>
-        -->
 
         <!-- JWT ve Swagger -->
         <dependency>

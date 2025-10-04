@@ -4,7 +4,6 @@ package com.example.jwtsecurity.service;
 import com.example.jwtsecurity.dto.*;
 import com.example.jwtsecurity.model.User;
 import com.example.jwtsecurity.repository.UserRepository;
-import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;

@@ -1,6 +1,6 @@
 package com.example.jwtsecurity.dto;
 
-/**  Register isteği için DTO  */
+// register request dto http isteğinden gelen veriyi taşır
 public class RegisterRequest {
 
     private String username;
@@ -22,4 +22,9 @@ public class RegisterRequest {
     public void   setPassword(String password) { this.password = password; }
     public String getRole() { return role; }
     public void   setRole(String role) { this.role = role; }
+    
+    // role alanı için default değer
+    public String getRoleOrDefault() {
+        return role != null ? role : "USER";
+    }
 }
