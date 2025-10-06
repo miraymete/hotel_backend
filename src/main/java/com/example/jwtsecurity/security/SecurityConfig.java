@@ -74,25 +74,39 @@ public class SecurityConfig {
         return provider;
     }
 
-    // cors ayarları geliştirme ortamındaki frontendlere izin verir
+    // Global CORS konfigürasyonu - görsellerdeki tavsiyelere göre
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration cfg = new CorsConfiguration();
-        cfg.setAllowedOrigins(List.of(
-            "http://localhost:3000",
-            "http://localhost:5173",
-            "http://localhost:5174",
-            "http://127.0.0.1:5173",
-            "http://127.0.0.1:5174",
-            "https://hotel-frontend-ts-zsjq.vercel.app",
-            "https://hotel-frontend-ts.vercel.app",
-            "https://hotel-frontend-luxop0lni-miraymetes-projects.vercel.app",
-            "https://hotel-frontend-9j6i9nkpq-miraymetes-projects.vercel.app"
-        ));
-        cfg.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
-        cfg.setAllowedHeaders(List.of("Content-Type", "Authorization", "X-XSRF-TOKEN", "X-CSRF-Token"));
+        
+        // Axios withCredentials: true -> allowCredentials zorunlu
         cfg.setAllowCredentials(true);
-        cfg.setMaxAge(3600L); // bir saatlik preflight cache
+        
+        // Spesifik originler: vercel + local dev (wildcard yerine pattern)
+        cfg.setAllowedOriginPatterns(List.of(
+            "https://*.vercel.app",  // Tüm vercel subdomain'leri
+            "http://localhost:*",    // Tüm localhost portları
+            "http://127.0.0.1:*"    // Tüm 127.0.0.1 portları
+        ));
+        
+        // İzinli yöntemler
+        cfg.setAllowedMethods(List.of(
+            "GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"
+        ));
+        
+        // İzinli headerlar
+        cfg.setAllowedHeaders(List.of(
+            "Authorization",
+            "Content-Type", 
+            "Accept",
+            "Origin",
+            "X-Requested-With"
+        ));
+        
+        // Tarayıcıdan okunacak headerlar
+        cfg.setExposedHeaders(List.of(
+            "Authorization"
+        ));
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", cfg);
