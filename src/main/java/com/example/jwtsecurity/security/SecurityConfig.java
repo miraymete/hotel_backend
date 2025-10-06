@@ -2,9 +2,9 @@ package com.example.jwtsecurity.security;
 
 import com.example.jwtsecurity.service.CustomUserDetailsService;
 
-import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.beans.factory.annotation.Value;
 
 
 import org.springframework.security.authentication.AuthenticationManager;
@@ -18,6 +18,7 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
 
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 import org.springframework.security.web.SecurityFilterChain;
@@ -41,14 +42,18 @@ import java.util.List;
 @Configuration
 @EnableWebSecurity
 @EnableMethodSecurity
-@RequiredArgsConstructor
 public class SecurityConfig {
 
-    // jwt filtresi uygulama seviyesinde kimlik doğrulama için kullanılır
-    @Bean
-    public JwtAuthFilter jwtAuthFilter(CustomUserDetailsService userDetailsService) {
-        return new JwtAuthFilter(userDetailsService);
+    private final CustomUserDetailsService userDetailsService;
+    private final JwtAuthFilter jwtAuthFilter;
+
+    public SecurityConfig(CustomUserDetailsService userDetailsService,
+                         JwtAuthFilter jwtAuthFilter) {
+        this.userDetailsService = userDetailsService;
+        this.jwtAuthFilter = jwtAuthFilter;
     }
+
+    // JwtAuthFilter artık @Component ile yönetiliyor, duplicate bean riski ortadan kalktı
 
     // şiifreleyici
     @Bean
@@ -79,6 +84,7 @@ public class SecurityConfig {
             "http://localhost:5174",
             "http://127.0.0.1:5173",
             "http://127.0.0.1:5174",
+            "https://hotel-frontend-ts-zsjq.vercel.app",
             "https://hotel-frontend-ts.vercel.app",
             "https://hotel-frontend-luxop0lni-miraymetes-projects.vercel.app",
             "https://hotel-frontend-9j6i9nkpq-miraymetes-projects.vercel.app"
@@ -151,25 +157,43 @@ public class SecurityConfig {
     }
 
     @Bean
-    public SecurityFilterChain filterChain(
-            HttpSecurity http,
-            JwtAuthFilter jwtAuthFilter,
-            AuthenticationProvider authenticationProvider
-    ) throws Exception {
-
-        // geliştirme için basitleştirilmiş güvenlik zinciri
+    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
-                .csrf(csrf -> csrf.disable()) // jwt ile stateful csrf gerekmez
+                .csrf(csrf -> csrf.disable())
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
-                .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .addFilterBefore(jwtAuthFilter, org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter.class)
+                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
-                        .anyRequest().permitAll() // tüm istekleri geçici olarak serbest bırak
+                        // Public endpoints - kimlik doğrulama gerektirmez
+                        .requestMatchers("/api/auth/login", "/api/auth/register").permitAll()
+                        .requestMatchers("/swagger-ui/**", "/v3/api-docs/**").permitAll()
+                        .requestMatchers("/h2-console/**").permitAll()
+                        .requestMatchers("/actuator/health").permitAll()
+                        .requestMatchers("/error", "/error/**").permitAll()
+                        .requestMatchers(org.springframework.http.HttpMethod.OPTIONS, "/**").permitAll()
+                        
+                        // Admin endpoints - sadece ADMIN rolü
+                        .requestMatchers("/api/bookings/all").hasRole("ADMIN")
+                        .requestMatchers("/api/bookings/*/status").hasRole("ADMIN")
+                        .requestMatchers("/api/users/**").hasRole("ADMIN")
+                        
+                        // User endpoints - authenticated users
+                        .requestMatchers("/api/bookings/**").authenticated()
+                        .requestMatchers("/api/hotels/**").authenticated()
+                        .requestMatchers("/api/tours/**").authenticated()
+                        .requestMatchers("/api/yachts/**").authenticated()
+                        
+                        // Diğer tüm istekler için kimlik doğrulama gerekli
+                        .anyRequest().authenticated()
                 )
-                .authenticationProvider(authenticationProvider)
-                // .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class) // jwt filtresini geçici olarak kapalı tuttuk
+                .authenticationProvider(authenticationProvider(
+                    userDetailsService,
+                    passwordEncoder()
+                ))
                 .exceptionHandling(ex -> ex
+                    .authenticationEntryPoint(authenticationEntryPoint())
                     .accessDeniedHandler(accessDeniedHandler())
-                    .authenticationEntryPoint(authenticationEntryPoint()));
+                );
 
         return http.build();
     }

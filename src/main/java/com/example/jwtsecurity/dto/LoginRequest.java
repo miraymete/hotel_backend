@@ -1,9 +1,14 @@
 package com.example.jwtsecurity.dto;
 
-/**  Login isteği için DTO  */
+import jakarta.validation.constraints.NotBlank;
+
+/**  Login isteği için DTO - hem username hem email ile login destekler  */
 public class LoginRequest {
 
-    private String username;
+    @NotBlank(message = "Username or email is required")
+    private String username; // Bu alan username veya email olabilir
+
+    @NotBlank(message = "Password is required")
     private String password;
 
     public LoginRequest() { }
@@ -14,8 +19,8 @@ public class LoginRequest {
     }
 
     public String getUsername() { return username; }
-    public void   setUsername(String username) { this.username = username; }
+    public void setUsername(String username) { this.username = username; }
 
     public String getPassword() { return password; }
-    public void   setPassword(String password) { this.password = password; }
+    public void setPassword(String password) { this.password = password; }
 }

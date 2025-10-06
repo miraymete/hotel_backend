@@ -12,6 +12,11 @@ public class HelloController {
         return "Herkese açık endpoint";
     }
 
+    @GetMapping("/api/hello")
+    public String apiHello() {
+        return "API Hello - Backend çalışıyor!";
+    }
+
     @GetMapping("/user")
     @PreAuthorize("hasAnyRole('USER', 'ADMIN')") // user ve admin girebilir
     public String userHello() {

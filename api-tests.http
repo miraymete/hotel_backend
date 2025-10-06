@@ -1,0 +1,37 @@
+### API Test Dosyası - VS Code REST Client ile kullanın
+
+### 1. Kullanıcı Kaydı
+POST http://localhost:6060/api/auth/register
+Content-Type: application/json
+
+{
+    "username": "testuser",
+    "email": "test@example.com",
+    "password": "password123",
+    "firstName": "Test",
+    "lastName": "User"
+}
+
+### 2. Kullanıcı Girişi
+POST http://localhost:6060/api/auth/login
+Content-Type: application/json
+
+{
+    "username": "testuser",
+    "password": "password123"
+}
+
+### 3. Otelleri Listele
+GET http://localhost:6060/api/hotels
+
+### 4. Turları Listele  
+GET http://localhost:6060/api/tours
+
+### 5. Yatları Listele
+GET http://localhost:6060/api/yachts
+
+### 6. Health Check
+GET http://localhost:6060/api/hello
+
+### 7. Swagger UI (API Dokümantasyonu)
+GET http://localhost:6060/swagger-ui.html
