@@ -39,7 +39,6 @@ public class TourRequest {
     private Boolean isRecommended = false;
     private Set<String> tags;
 
-    // Constructors
     public TourRequest() {}
 
     public TourRequest(String name, String description, String location, String category,
@@ -53,21 +52,24 @@ public class TourRequest {
         this.price = price;
     }
 
-    // Getters and Setters
     public String getName() { return name; }
+
     public void setName(String name) { this.name = name; }
 
     public String getDescription() { return description; }
-    public void setDescription(String description) { this.description = description; }
+    public void setDescription(String description) { this.description = description;
+     }
 
     public String getLocation() { return location; }
-    public void setLocation(String location) { this.location = location; }
+    public void setLocation(String location) { this.location = location; 
+    }
 
     public String getCategory() { return category; }
     public void setCategory(String category) { this.category = category; }
 
     public String getDuration() { return duration; }
-    public void setDuration(String duration) { this.duration = duration; }
+    public void setDuration(String duration) { this.duration = duration; 
+    }
 
     public String getGroupSize() { return groupSize; }
     public void setGroupSize(String groupSize) { this.groupSize = groupSize; }
@@ -79,20 +81,24 @@ public class TourRequest {
     public void setCurrency(String currency) { this.currency = currency; }
 
     public Double getRatingScore() { return ratingScore; }
-    public void setRatingScore(Double ratingScore) { this.ratingScore = ratingScore; }
+    public void setRatingScore(Double ratingScore) { this.ratingScore = ratingScore;
+     }
 
     public String getRatingLabel() { return ratingLabel; }
-    public void setRatingLabel(String ratingLabel) { this.ratingLabel = ratingLabel; }
+    public void setRatingLabel(String ratingLabel) { this.ratingLabel = ratingLabel; 
+    }
 
     public Integer getReviewCount() { return reviewCount; }
     public void setReviewCount(Integer reviewCount) { this.reviewCount = reviewCount; }
 
     public String getImageUrl() { return imageUrl; }
-    public void setImageUrl(String imageUrl) { this.imageUrl = imageUrl; }
+    public void setImageUrl(String imageUrl) { this.imageUrl = imageUrl;
+     }
 
     public Boolean getIsRecommended() { return isRecommended; }
     public void setIsRecommended(Boolean isRecommended) { this.isRecommended = isRecommended; }
 
     public Set<String> getTags() { return tags; }
-    public void setTags(Set<String> tags) { this.tags = tags; }
+    public void setTags(Set<String> tags) { this.tags = tags; 
+    }
 }

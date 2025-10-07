@@ -14,18 +14,19 @@ public class HelloController {
 
     @GetMapping("/api/hello")
     public String apiHello() {
-        return "API Hello - Backend çalışıyor!";
+        return "API Hello - Backend çalışıyor";
     }
 
+
     @GetMapping("/user")
-    @PreAuthorize("hasAnyRole('USER', 'ADMIN')") // user ve admin girebilir
+    @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
     public String userHello() {
-        return "Merhaba User ya da Admin!";
+        return "Merhaba user ya da admin";
     }
 
     @GetMapping("/admin")
-    @PreAuthorize("hasRole('ADMIN')") // Sadece admin girebilir
+    @PreAuthorize("hasRole('ADMIN')")
     public String adminHello() {
-        return "Merhaba Admin!";
+        return "Merhaba admin";
     }
 }

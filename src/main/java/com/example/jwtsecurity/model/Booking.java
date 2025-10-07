@@ -17,22 +17,22 @@ public class Booking {
 
     @Column(name = "booking_type", nullable = false)
     @Enumerated(EnumType.STRING)
-    private BookingType bookingType; // HOTEL, TOUR, YACHT
+    private BookingType bookingType; 
 
     @Column(name = "item_id", nullable = false)
-    private Long itemId; // Hotel, Tour veya Yacht ID'si
+    private Long itemId; 
 
     @Column(name = "item_name", nullable = false)
-    private String itemName; // Hotel, Tour veya Yacht adı
+    private String itemName; 
 
     @Column(name = "check_in_date")
-    private String checkInDate; // String olarak tutuyoruz (frontend uyumluluğu)
+    private String checkInDate;
 
     @Column(name = "check_out_date")
-    private String checkOutDate; // String olarak tutuyoruz
+    private String checkOutDate;
 
     @Column(name = "booking_date", nullable = false)
-    private String bookingDate; // String olarak tutuyoruz
+    private String bookingDate; 
 
     @Column(name = "guest_count")
     private Integer guestCount = 1;
@@ -56,17 +56,16 @@ public class Booking {
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 
-    // Booking türleri
+    // booking türleri
     public enum BookingType {
         HOTEL, TOUR, YACHT
     }
 
-    // Booking durumları
     public enum BookingStatus {
-        PENDING,    // Beklemede
-        CONFIRMED,  // Onaylandı
-        CANCELLED,  // İptal edildi
-        COMPLETED   // Tamamlandı
+        PENDING,    // bekleme
+        CONFIRMED,  // onay
+        CANCELLED,  
+        COMPLETED   
     }
 
     public Booking() {
@@ -74,7 +73,6 @@ public class Booking {
         this.updatedAt = LocalDateTime.now();
     }
 
-    // JPA lifecycle callbacks
     @PrePersist
     protected void onCreate() {
         createdAt = LocalDateTime.now();
@@ -86,7 +84,6 @@ public class Booking {
         updatedAt = LocalDateTime.now();
     }
 
-    // Getters and Setters
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
 

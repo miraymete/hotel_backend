@@ -2,8 +2,9 @@ package com.example.jwtsecurity.model;
 
 import jakarta.persistence.*;
 import java.math.BigDecimal;
-import java.util.HashSet;
-import java.util.Set;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(name = "yachts")
@@ -22,44 +23,70 @@ public class Yacht {
     private String location;
 
     @Column(nullable = false)
-    private String category; // Lüks, Klasik, Katamaran, Tekne
+    private String type; 
 
-    @Column(nullable = false)
-    private String capacity; // 12 kişi, 14 kişi, vb.
+    @Column(name = "yacht_length")
+    private String yachtLength; 
 
-    @Column(nullable = false)
-    private String length; // 24m, 21m, vb.
+    @Column(name = "max_capacity")
+    private Integer maxCapacity; 
 
-    @Column(precision = 10, scale = 2)
-    private BigDecimal price;
-
-    @Column
-    private String currency = "TRY"; // TRY, USD, EUR
-
-    @Column
-    private Double ratingScore; // 0..10
+    @Column(name = "duration_hours")
+    private Integer durationHours; 
+    @Column(name = "base_price", precision = 10, scale = 2)
+    private BigDecimal basePrice;
 
     @Column
-    private String ratingLabel; // "Mükemmel", "Çok İyi"
+    private String currency = "TRY";
+
+    @Column(precision = 3, scale = 1)
+    private BigDecimal rating = BigDecimal.ZERO;
 
     @Column
-    private Integer reviewCount;
+    private Integer reviewCount = 0;
 
-    @Column
-    private String imageUrl;
-
-    @Column
-    private Boolean isRecommended = false;
-
-    // Yacht etiketleri (Lüks, Flybridge, vb.)
     @ElementCollection
-    @CollectionTable(name = "yacht_tags", joinColumns = @JoinColumn(name = "yacht_id"))
-    @Column(name = "tag")
-    private Set<String> tags = new HashSet<>();
+    @CollectionTable(name = "yacht_images", joinColumns = @JoinColumn(name = "yacht_id"))
+    @Column(name = "image_url")
+    private List<String> imageUrls = new ArrayList<>();
 
-    public Yacht() {}
+    @ElementCollection
+    @CollectionTable(name = "yacht_amenities", joinColumns = @JoinColumn(name = "yacht_id"))
+    @Column(name = "amenity")
+    private List<String> amenities = new ArrayList<>();
 
-    // Getters and Setters
+    @Column(name = "captain_included")
+    private Boolean captainIncluded = true;
+
+    @Column(name = "fuel_included")
+    private Boolean fuelIncluded = false;
+
+    @Column(name = "is_active")
+    private Boolean isActive = true;
+
+    @Column(name = "created_at")
+    private LocalDateTime createdAt;
+
+    @Column(name = "updated_at")
+    private LocalDateTime updatedAt;
+
+    public Yacht() {
+        this.createdAt = LocalDateTime.now();
+        this.updatedAt = LocalDateTime.now();
+    }
+
+    @PrePersist
+    protected void onCreate() {
+        createdAt = LocalDateTime.now();
+        updatedAt = LocalDateTime.now();
+    }
+
+    @PreUpdate
+    protected void onUpdate() {
+        updatedAt = LocalDateTime.now();
+    }
+
+
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
 
@@ -72,36 +99,48 @@ public class Yacht {
     public String getLocation() { return location; }
     public void setLocation(String location) { this.location = location; }
 
-    public String getCategory() { return category; }
-    public void setCategory(String category) { this.category = category; }
+    public String getType() { return type; }
+    public void setType(String type) { this.type = type; }
 
-    public String getCapacity() { return capacity; }
-    public void setCapacity(String capacity) { this.capacity = capacity; }
+    public String getYachtLength() { return yachtLength; }
+    public void setYachtLength(String yachtLength) { this.yachtLength = yachtLength; }
 
-    public String getLength() { return length; }
-    public void setLength(String length) { this.length = length; }
+    public Integer getMaxCapacity() { return maxCapacity; }
+    public void setMaxCapacity(Integer maxCapacity) { this.maxCapacity = maxCapacity; }
 
-    public BigDecimal getPrice() { return price; }
-    public void setPrice(BigDecimal price) { this.price = price; }
+    public Integer getDurationHours() { return durationHours; }
+    public void setDurationHours(Integer durationHours) { this.durationHours = durationHours; }
+
+    public BigDecimal getBasePrice() { return basePrice; }
+    public void setBasePrice(BigDecimal basePrice) { this.basePrice = basePrice; }
 
     public String getCurrency() { return currency; }
     public void setCurrency(String currency) { this.currency = currency; }
 
-    public Double getRatingScore() { return ratingScore; }
-    public void setRatingScore(Double ratingScore) { this.ratingScore = ratingScore; }
-
-    public String getRatingLabel() { return ratingLabel; }
-    public void setRatingLabel(String ratingLabel) { this.ratingLabel = ratingLabel; }
+    public BigDecimal getRating() { return rating; }
+    public void setRating(BigDecimal rating) { this.rating = rating; }
 
     public Integer getReviewCount() { return reviewCount; }
     public void setReviewCount(Integer reviewCount) { this.reviewCount = reviewCount; }
 
-    public String getImageUrl() { return imageUrl; }
-    public void setImageUrl(String imageUrl) { this.imageUrl = imageUrl; }
+    public List<String> getImageUrls() { return imageUrls; }
+    public void setImageUrls(List<String> imageUrls) { this.imageUrls = imageUrls; }
 
-    public Boolean getIsRecommended() { return isRecommended; }
-    public void setIsRecommended(Boolean isRecommended) { this.isRecommended = isRecommended; }
+    public List<String> getAmenities() { return amenities; }
+    public void setAmenities(List<String> amenities) { this.amenities = amenities; }
 
-    public Set<String> getTags() { return tags; }
-    public void setTags(Set<String> tags) { this.tags = tags; }
+    public Boolean getCaptainIncluded() { return captainIncluded; }
+    public void setCaptainIncluded(Boolean captainIncluded) { this.captainIncluded = captainIncluded; }
+
+    public Boolean getFuelIncluded() { return fuelIncluded; }
+    public void setFuelIncluded(Boolean fuelIncluded) { this.fuelIncluded = fuelIncluded; }
+
+    public Boolean getIsActive() { return isActive; }
+    public void setIsActive(Boolean isActive) { this.isActive = isActive; }
+
+    public LocalDateTime getCreatedAt() { return createdAt; }
+    public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
+
+    public LocalDateTime getUpdatedAt() { return updatedAt; }
+    public void setUpdatedAt(LocalDateTime updatedAt) { this.updatedAt = updatedAt; }
 }

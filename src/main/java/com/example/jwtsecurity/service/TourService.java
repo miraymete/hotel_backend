@@ -21,7 +21,6 @@ public class TourService {
         this.tourRepository = tourRepository;
     }
 
-    // Tüm turları listele
     public List<TourResponse> listAll() {
         List<Tour> tours = tourRepository.findAll();
         return tours.stream()
@@ -29,21 +28,19 @@ public class TourService {
                 .toList();
     }
 
-    // ID ile tour bul
     public TourResponse getById(Long id) {
         Tour tour = tourRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Tour not found with id: " + id));
         return convertToResponse(tour);
+
     }
 
-    // Kategoriye göre turları bul
     public Page<TourResponse> findByCategory(String category, int page, int size) {
         Pageable pageable = PageRequest.of(page, size);
         Page<Tour> tours = tourRepository.findByCategory(category, pageable);
         return tours.map(this::convertToResponse);
     }
 
-    // Önerilen turları bul
     public List<TourResponse> getRecommended() {
         List<Tour> tours = tourRepository.findByIsRecommendedTrue();
         return tours.stream()
@@ -51,21 +48,21 @@ public class TourService {
                 .toList();
     }
 
-    // Arama
+    // arama
     public Page<TourResponse> search(String query, BigDecimal minPrice, BigDecimal maxPrice, int page, int size) {
         Pageable pageable = PageRequest.of(page, size);
         Page<Tour> tours = tourRepository.searchTours(query, minPrice, maxPrice, pageable);
         return tours.map(this::convertToResponse);
     }
 
-    // Kategori ve fiyat aralığına göre arama
+    // kategori ve fiyat 
     public Page<TourResponse> findByCategoryAndPrice(String category, BigDecimal minPrice, BigDecimal maxPrice, int page, int size) {
         Pageable pageable = PageRequest.of(page, size);
         Page<Tour> tours = tourRepository.findByCategoryAndPriceBetween(category, minPrice, maxPrice, pageable);
         return tours.map(this::convertToResponse);
     }
 
-    // Yeni tour oluştur (Admin)
+    // yeni tur admin
     public TourResponse create(TourRequest request) {
         Tour tour = new Tour();
         tour.setName(request.getName());
@@ -87,7 +84,6 @@ public class TourService {
         return convertToResponse(savedTour);
     }
 
-    // Tour güncelle (Admin)
     public TourResponse update(Long id, TourRequest request) {
         Tour tour = tourRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Tour not found with id: " + id));
@@ -111,7 +107,6 @@ public class TourService {
         return convertToResponse(updatedTour);
     }
 
-    // Tour sil (Admin)
     public void delete(Long id) {
         if (!tourRepository.existsById(id)) {
             throw new RuntimeException("Tour not found with id: " + id);
@@ -119,7 +114,6 @@ public class TourService {
         tourRepository.deleteById(id);
     }
 
-    // Tour entity'sini TourResponse'a dönüştür
     private TourResponse convertToResponse(Tour tour) {
         return new TourResponse(
                 tour.getId(),

@@ -1,4 +1,3 @@
-// src/main/java/com/example/jwtsecurity/repository/UserRepository.java
 package com.example.jwtsecurity.repository;
 
 import com.example.jwtsecurity.model.User;
@@ -13,4 +12,3 @@ public interface UserRepository extends JpaRepository<User, Long> {
     boolean existsByEmail(String email);
 }
 
-// Bu arayüz, User modelini yönetmek için JpaRepository'yi genişletir. ?????????????

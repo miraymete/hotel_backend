@@ -30,12 +30,12 @@ public class User {
     private String phoneNumber;
     
     @Column(name = "date_of_birth")
-    private String dateOfBirth; // String olarak tutuyoruz (frontend uyumluluğu için)
+    private String dateOfBirth; 
     
     @Column(name = "profile_image_url")
     private String profileImageUrl;
     
-    // Sistem alanları
+    //sistem alanları
     @Column(name = "created_at")
     private LocalDateTime createdAt;
     
@@ -49,7 +49,6 @@ public class User {
     private Boolean emailVerified = false;
 
     public User() {
-        // JPA lifecycle callbacks will handle timestamps
     }
 
     public User(Long id, String username, String password, String role) {
@@ -60,7 +59,6 @@ public class User {
         this.role = role;
     }
 
-    // JPA lifecycle callbacks
     @PrePersist
     protected void onCreate() {
         createdAt = LocalDateTime.now();
@@ -72,7 +70,6 @@ public class User {
         updatedAt = LocalDateTime.now();
     }
 
-    // Getters and Setters
     public Long getId() {
         return id;
     }

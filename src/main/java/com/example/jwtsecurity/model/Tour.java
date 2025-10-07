@@ -22,25 +22,25 @@ public class Tour {
     private String location;
 
     @Column(nullable = false)
-    private String category; // Doğa, Macera, Şehir, Tarih
+    private String category; 
 
     @Column(nullable = false)
-    private String duration; // 3 saat, 5 saat, vb.
+    private String duration; 
 
     @Column(nullable = false)
-    private String groupSize; // 12 kişi, 15 kişi, vb.
+    private String groupSize; 
 
     @Column(precision = 10, scale = 2)
     private BigDecimal price;
 
     @Column
-    private String currency = "TRY"; // TRY, USD, EUR
+    private String currency = "TRY"; 
 
     @Column
-    private Double ratingScore; // 0..10
+    private Double ratingScore; // 0 ve 10 arası
 
     @Column
-    private String ratingLabel; // "Mükemmel", "Çok İyi"
+    private String ratingLabel; 
 
     @Column
     private Integer reviewCount;
@@ -51,7 +51,6 @@ public class Tour {
     @Column
     private Boolean isRecommended = false;
 
-    // Tour etiketleri (Doğa, Macera, vb.)
     @ElementCollection
     @CollectionTable(name = "tour_tags", joinColumns = @JoinColumn(name = "tour_id"))
     @Column(name = "tag")
@@ -59,7 +58,6 @@ public class Tour {
 
     public Tour() {}
 
-    // Getters and Setters
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
 

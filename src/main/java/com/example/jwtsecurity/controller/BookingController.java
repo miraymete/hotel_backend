@@ -1,18 +1,20 @@
 package com.example.jwtsecurity.controller;
 
 import com.example.jwtsecurity.dto.BookingRequest;
-import com.example.jwtsecurity.dto.BookingResponse;
+import com.example.jwtsecurity.dto.HotelBookingRequest;
+import com.example.jwtsecurity.dto.TourBookingRequest;
+import com.example.jwtsecurity.dto.YachtBookingRequest;
 import com.example.jwtsecurity.model.Booking;
 import com.example.jwtsecurity.service.BookingService;
 import jakarta.validation.Valid;
-import org.springframework.data.domain.Page;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.Map;
 
+// rezervo için endpointler
 @RestController
 @RequestMapping("/api/bookings")
 @CrossOrigin(origins = {
@@ -31,41 +33,96 @@ public class BookingController {
         this.bookingService = bookingService;
     }
 
-    // Yeni rezervasyon oluştur (Kullanıcı)
+    // genel rezervasyon 
     @PostMapping
-    public ResponseEntity<BookingResponse> createBooking(@Valid @RequestBody BookingRequest request) {
-        BookingResponse response = bookingService.createBooking(request);
-        return ResponseEntity.status(HttpStatus.CREATED).body(response);
+    @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
+    public ResponseEntity<Booking> createBooking(@Valid @RequestBody BookingRequest request) {
+        Booking booking = bookingService.createBooking(request);
+        return ResponseEntity.ok(booking);
     }
 
-    // Kullanıcının rezervasyonlarını getir
+    // otel rezervo
+    @PostMapping("/hotel/{hotelId}")
+    @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
+    public ResponseEntity<Object> createHotelBooking(@PathVariable Long hotelId, 
+                                                    @Valid @RequestBody HotelBookingRequest request) {
+        try {
+            var booking = bookingService.createHotelBooking(request, hotelId);
+            return ResponseEntity.ok(booking);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        }
+    }
+
+    // tur rezervo
+    @PostMapping("/tour")
+    @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
+    public ResponseEntity<Object> createTourBooking(@Valid @RequestBody TourBookingRequest request) {
+        try {
+            var booking = bookingService.createTourBooking(request);
+            return ResponseEntity.ok(booking);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        }
+    }
+
+    // yat rezervo
+    @PostMapping("/yacht")
+    @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
+    public ResponseEntity<Object> createYachtBooking(@Valid @RequestBody YachtBookingRequest request) {
+        try {
+            var booking = bookingService.createYachtBooking(request);
+            return ResponseEntity.ok(booking);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        }
+    }
+
+    //rezervoları getir
     @GetMapping("/my-bookings")
-    public Page<BookingResponse> getMyBookings(@RequestParam(defaultValue = "0") int page,
-                                              @RequestParam(defaultValue = "10") int size) {
-        return bookingService.getUserBookings(page, size);
+    @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
+    public ResponseEntity<List<Booking>> getMyBookings() {
+        return ResponseEntity.ok(List.of());
     }
 
-    // Rezervasyonu iptal et (Kullanıcı)
-    @PutMapping("/{id}/cancel")
-    public BookingResponse cancelBooking(@PathVariable Long id) {
-        return bookingService.cancelBooking(id);
-    }
-
-    // Tüm rezervasyonları getir (Admin)
     @GetMapping("/all")
     @PreAuthorize("hasRole('ADMIN')")
-    public Page<BookingResponse> getAllBookings(@RequestParam(defaultValue = "0") int page,
-                                               @RequestParam(defaultValue = "10") int size) {
-        return bookingService.getAllBookings(page, size);
+    public ResponseEntity<List<Booking>> getAllBookings() {
+        List<Booking> bookings = bookingService.getAllBookings();
+        return ResponseEntity.ok(bookings);
     }
 
-    // Rezervasyon durumunu güncelle (Admin)
-    @PutMapping("/{id}/status")
+    @GetMapping("/{id}")
+    @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
+    public ResponseEntity<Booking> getBookingById(@PathVariable Long id) {
+        return bookingService.getBookingById(id)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
+    }
+
+    // rezervo güncelle
+    @PutMapping("/{id}")
+    @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
+    public ResponseEntity<Booking> updateBooking(@PathVariable Long id, 
+                                                @Valid @RequestBody BookingRequest request) {
+        Booking updatedBooking = bookingService.updateBooking(id, request);
+        return ResponseEntity.ok(updatedBooking);
+    }
+
+    //sil
+    @DeleteMapping("/{id}")
+    @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
+    public ResponseEntity<Void> deleteBooking(@PathVariable Long id) {
+        bookingService.deleteBooking(id);
+        return ResponseEntity.noContent().build();
+    }
+
+
+    @PatchMapping("/{id}/status")
     @PreAuthorize("hasRole('ADMIN')")
-    public BookingResponse updateBookingStatus(@PathVariable Long id, 
-                                              @RequestBody Map<String, String> statusRequest) {
-        String statusStr = statusRequest.get("status");
-        Booking.BookingStatus status = Booking.BookingStatus.valueOf(statusStr.toUpperCase());
-        return bookingService.updateBookingStatus(id, status);
+    public ResponseEntity<Booking> updateBookingStatus(@PathVariable Long id, 
+                                                      @RequestParam String status) {
+        Booking updatedBooking = bookingService.updateBookingStatus(id, status);
+        return ResponseEntity.ok(updatedBooking);
     }
 }

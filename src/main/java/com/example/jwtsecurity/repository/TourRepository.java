@@ -14,13 +14,11 @@ import java.util.List;
 @Repository
 public interface TourRepository extends JpaRepository<Tour, Long> {
     
-    // Kategoriye göre turları bul
     Page<Tour> findByCategory(String category, Pageable pageable);
     
-    // Önerilen turları bul
     List<Tour> findByIsRecommendedTrue();
     
-    // Arama sorgusu
+    //arama sorgusu
     @Query("SELECT t FROM Tour t WHERE " +
            "(:q IS NULL OR LOWER(t.name) LIKE LOWER(CONCAT('%', :q, '%')) OR " +
            "LOWER(t.description) LIKE LOWER(CONCAT('%', :q, '%')) OR " +
@@ -32,7 +30,7 @@ public interface TourRepository extends JpaRepository<Tour, Long> {
                           @Param("maxPrice") BigDecimal maxPrice, 
                           Pageable pageable);
     
-    // Kategori ve fiyat aralığına göre arama
+    
     @Query("SELECT t FROM Tour t WHERE " +
            "(:category IS NULL OR t.category = :category) AND " +
            "(:minPrice IS NULL OR t.price >= :minPrice) AND " +

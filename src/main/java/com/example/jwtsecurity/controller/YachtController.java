@@ -1,11 +1,7 @@
 package com.example.jwtsecurity.controller;
 
-import com.example.jwtsecurity.dto.YachtRequest;
-import com.example.jwtsecurity.dto.YachtResponse;
+import com.example.jwtsecurity.model.Yacht;
 import com.example.jwtsecurity.service.YachtService;
-import jakarta.validation.Valid;
-import org.springframework.data.domain.Page;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -32,72 +28,79 @@ public class YachtController {
         this.yachtService = yachtService;
     }
 
-    // Tüm yatları listele (herkese açık)
+    // yatları sırala
     @GetMapping
-    public List<YachtResponse> list() {
-        return yachtService.listAll();
+    public List<Yacht> list() {
+        return yachtService.getAllActiveYachts();
     }
 
-    // ID ile yacht getir (herkese açık)
     @GetMapping("/{id}")
-    public YachtResponse get(@PathVariable Long id) {
-        return yachtService.getById(id);
+    public ResponseEntity<Yacht> get(@PathVariable Long id) {
+        return yachtService.getYachtById(id)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
     }
 
-    // Önerilen yatları getir (herkese açık)
-    @GetMapping("/recommended")
-    public List<YachtResponse> getRecommended() {
-        return yachtService.getRecommended();
+    @GetMapping("/type/{type}")
+    public List<Yacht> getByType(@PathVariable String type) {
+        return yachtService.getYachtsByType(type);
     }
 
-    // Kategoriye göre yatları getir (herkese açık)
-    @GetMapping("/category/{category}")
-    public Page<YachtResponse> getByCategory(@PathVariable String category,
-                                            @RequestParam(defaultValue = "0") int page,
-                                            @RequestParam(defaultValue = "12") int size) {
-        return yachtService.findByCategory(category, page, size);
+    @GetMapping("/location/{location}")
+    public List<Yacht> getByLocation(@PathVariable String location) {
+        return yachtService.getYachtsByLocation(location);
     }
 
-    // Arama (herkese açık)
+    @GetMapping("/price-range")
+    public List<Yacht> getByPriceRange(@RequestParam BigDecimal minPrice,
+                                       @RequestParam BigDecimal maxPrice) {
+        return yachtService.getYachtsByPriceRange(minPrice, maxPrice);
+    }
+
     @GetMapping("/search")
-    public Page<YachtResponse> search(@RequestParam(required = false) String q,
-                                      @RequestParam(required = false) BigDecimal minPrice,
-                                      @RequestParam(required = false) BigDecimal maxPrice,
-                                      @RequestParam(defaultValue = "0") int page,
-                                      @RequestParam(defaultValue = "12") int size) {
-        return yachtService.search(q, minPrice, maxPrice, page, size);
+    public List<Yacht> search(@RequestParam(required = false) String query,
+                              @RequestParam(required = false) String type,
+                              @RequestParam(required = false) BigDecimal minPrice,
+                              @RequestParam(required = false) BigDecimal maxPrice) {
+        return yachtService.searchYachts(query, type, minPrice, maxPrice);
     }
 
-    // Kategori ve fiyat aralığına göre arama (herkese açık)
-    @GetMapping("/filter")
-    public Page<YachtResponse> filter(@RequestParam(required = false) String category,
-                                      @RequestParam(required = false) BigDecimal minPrice,
-                                      @RequestParam(required = false) BigDecimal maxPrice,
-                                      @RequestParam(defaultValue = "0") int page,
-                                      @RequestParam(defaultValue = "12") int size) {
-        return yachtService.findByCategoryAndPrice(category, minPrice, maxPrice, page, size);
+    @GetMapping("/types")
+    public List<String> getTypes() {
+        return yachtService.getDistinctTypes();
     }
 
-    // Yeni yacht oluştur (Admin)
+    @GetMapping("/locations")
+    public List<String> getLocations() {
+        return yachtService.getDistinctLocations();
+    }
+
     @PostMapping
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<YachtResponse> create(@Valid @RequestBody YachtRequest request) {
-        YachtResponse response = yachtService.create(request);
-        return ResponseEntity.status(HttpStatus.CREATED).body(response);
+    public ResponseEntity<Yacht> create(@RequestBody Yacht yacht) {
+        Yacht createdYacht = yachtService.createYacht(yacht);
+        return ResponseEntity.status(201).body(createdYacht);
     }
 
-    // Yacht güncelle (Admin)
     @PutMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
-    public YachtResponse update(@PathVariable Long id, @Valid @RequestBody YachtRequest request) {
-        return yachtService.update(id, request);
+    public ResponseEntity<Yacht> update(@PathVariable Long id, @RequestBody Yacht yacht) {
+        try {
+            Yacht updatedYacht = yachtService.updateYacht(id, yacht);
+            return ResponseEntity.ok(updatedYacht);
+        } catch (RuntimeException e) {
+            return ResponseEntity.notFound().build();
+        }
     }
 
-    // Yacht sil (Admin)
     @DeleteMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
-    public Map<String, String> delete(@PathVariable Long id) {
-        yachtService.delete(id);
-        return Map.of("message", "Yacht başarıyla silindi.");
+    public ResponseEntity<Map<String, String>> delete(@PathVariable Long id) {
+        try {
+            yachtService.deleteYacht(id);
+            return ResponseEntity.ok(Map.of("message", "Yacht başarıyla silindi."));
+        } catch (RuntimeException e) {
+            return ResponseEntity.notFound().build();
+        }
     }
 }

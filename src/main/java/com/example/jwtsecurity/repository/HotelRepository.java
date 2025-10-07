@@ -1,37 +1,37 @@
 package com.example.jwtsecurity.repository;
 
 import com.example.jwtsecurity.model.Hotel;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
+import org.springframework.stereotype.Repository;
 
-import java.math.BigDecimal;
+import java.util.List;
 
+@Repository
 public interface HotelRepository extends JpaRepository<Hotel, Long> {
-
-    // Son dakika kutusu
-    Page<Hotel> findByLastMinuteTrue(Pageable pageable);
-
-    // Basit arama (q, yıldız, fiyat) – amenities’i sonra ekleriz
-    @Query("""
-        select h from Hotel h
-        where (:q is null or lower(h.name) like lower(concat('%', :q, '%'))
-               or lower(h.city) like lower(concat('%', :q, '%'))
-               or lower(h.region) like lower(concat('%', :q, '%'))
-               or lower(h.country) like lower(concat('%', :q, '%')))
-          and (:minStars is null or h.stars >= :minStars)
-          and (:maxStars is null or h.stars <= :maxStars)
-          and (:minPrice is null or h.pricePerNight >= :minPrice)
-          and (:maxPrice is null or h.pricePerNight <= :maxPrice)
-        """)
-    Page<Hotel> search(@Param("q") String q,
-                       @Param("minStars") Integer minStars,
-                       @Param("maxStars") Integer maxStars,
-                       @Param("minPrice") BigDecimal minPrice,
-                       @Param("maxPrice") BigDecimal maxPrice,
-                       Pageable pageable);
-
-    Page<Hotel> findAllByOrderByRatingScoreDesc(Pageable pageable); // en iyiler
+    
+    List<Hotel> findByIsActiveTrue();
+    
+    List<Hotel> findByLocationContainingIgnoreCaseAndIsActiveTrue(String location);
+    
+    List<Hotel> findByCityAndIsActiveTrue(String city);
+    
+    List<Hotel> findByCountryAndIsActiveTrue(String country);
+    
+    @Query("SELECT h FROM Hotel h WHERE h.isActive = true AND " +
+           "(LOWER(h.name) LIKE LOWER(CONCAT('%', :search, '%')) OR " +
+           "LOWER(h.location) LIKE LOWER(CONCAT('%', :search, '%')) OR " +
+           "LOWER(h.city) LIKE LOWER(CONCAT('%', :search, '%')))")
+    List<Hotel> searchHotels(@Param("search") String search);
+    
+    @Query("SELECT h FROM Hotel h WHERE h.isActive = true AND h.basePrice BETWEEN :minPrice AND :maxPrice")
+    List<Hotel> findByPriceRange(@Param("minPrice") java.math.BigDecimal minPrice, 
+                                @Param("maxPrice") java.math.BigDecimal maxPrice);
+    
+    @Query("SELECT DISTINCT h.city FROM Hotel h WHERE h.isActive = true ORDER BY h.city")
+    List<String> findDistinctCities();
+    
+    @Query("SELECT DISTINCT h.country FROM Hotel h WHERE h.isActive = true ORDER BY h.country")
+    List<String> findDistinctCountries();
 }

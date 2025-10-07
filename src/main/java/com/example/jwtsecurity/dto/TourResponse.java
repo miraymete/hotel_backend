@@ -20,7 +20,6 @@ public class TourResponse {
     private Boolean isRecommended;
     private Set<String> tags;
 
-    // Constructors
     public TourResponse() {}
 
     public TourResponse(Long id, String name, String description, String location, String category,
@@ -44,7 +43,7 @@ public class TourResponse {
         this.tags = tags;
     }
 
-    // Getters and Setters
+
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
 

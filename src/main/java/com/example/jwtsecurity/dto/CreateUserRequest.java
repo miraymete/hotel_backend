@@ -1,4 +1,3 @@
-// src/main/java/com/example/jwtsecurity/dto/CreateUserRequest.java
 package com.example.jwtsecurity.dto;
 
 

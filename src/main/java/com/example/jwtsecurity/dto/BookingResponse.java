@@ -6,8 +6,6 @@ import java.time.LocalDateTime;
 
 public class BookingResponse {
     private Long id;
-    private Long userId;
-    private String username;
     private Booking.BookingType bookingType;
     private Long itemId;
     private String itemName;
@@ -21,18 +19,20 @@ public class BookingResponse {
     private String notes;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
+    
+    // userinfo
+    private Long userId;
+    private String userFullName;
+    private String userEmail;
 
-    // Constructors
     public BookingResponse() {}
 
-    public BookingResponse(Long id, Long userId, String username, Booking.BookingType bookingType,
-                          Long itemId, String itemName, String checkInDate, String checkOutDate,
-                          String bookingDate, Integer guestCount, BigDecimal totalPrice,
-                          String currency, Booking.BookingStatus status, String notes,
-                          LocalDateTime createdAt, LocalDateTime updatedAt) {
+    public BookingResponse(Long id, Booking.BookingType bookingType, Long itemId, String itemName,
+                          String checkInDate, String checkOutDate, String bookingDate,
+                          Integer guestCount, BigDecimal totalPrice, String currency,
+                          Booking.BookingStatus status, String notes, LocalDateTime createdAt,
+                          LocalDateTime updatedAt, Long userId, String userFullName, String userEmail) {
         this.id = id;
-        this.userId = userId;
-        this.username = username;
         this.bookingType = bookingType;
         this.itemId = itemId;
         this.itemName = itemName;
@@ -46,17 +46,14 @@ public class BookingResponse {
         this.notes = notes;
         this.createdAt = createdAt;
         this.updatedAt = updatedAt;
+        this.userId = userId;
+        this.userFullName = userFullName;
+        this.userEmail = userEmail;
     }
 
-    // Getters and Setters
+   
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
-
-    public Long getUserId() { return userId; }
-    public void setUserId(Long userId) { this.userId = userId; }
-
-    public String getUsername() { return username; }
-    public void setUsername(String username) { this.username = username; }
 
     public Booking.BookingType getBookingType() { return bookingType; }
     public void setBookingType(Booking.BookingType bookingType) { this.bookingType = bookingType; }
@@ -96,4 +93,13 @@ public class BookingResponse {
 
     public LocalDateTime getUpdatedAt() { return updatedAt; }
     public void setUpdatedAt(LocalDateTime updatedAt) { this.updatedAt = updatedAt; }
+
+    public Long getUserId() { return userId; }
+    public void setUserId(Long userId) { this.userId = userId; }
+
+    public String getUserFullName() { return userFullName; }
+    public void setUserFullName(String userFullName) { this.userFullName = userFullName; }
+
+    public String getUserEmail() { return userEmail; }
+    public void setUserEmail(String userEmail) { this.userEmail = userEmail; }
 }

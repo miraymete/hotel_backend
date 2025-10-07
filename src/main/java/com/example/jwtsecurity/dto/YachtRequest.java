@@ -39,7 +39,6 @@ public class YachtRequest {
     private Boolean isRecommended = false;
     private Set<String> tags;
 
-    // Constructors
     public YachtRequest() {}
 
     public YachtRequest(String name, String description, String location, String category,
@@ -53,7 +52,6 @@ public class YachtRequest {
         this.price = price;
     }
 
-    // Getters and Setters
     public String getName() { return name; }
     public void setName(String name) { this.name = name; }
 

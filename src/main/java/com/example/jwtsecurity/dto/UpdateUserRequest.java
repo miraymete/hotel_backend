@@ -1,4 +1,3 @@
-// src/main/java/com/example/jwtsecurity/dto/UpdateUserRequest.java
 package com.example.jwtsecurity.dto;
 
 public class UpdateUserRequest {
@@ -32,4 +31,4 @@ public class UpdateUserRequest {
     }
 }
 
-//// Bu sınıf, kullanıcı güncelleme isteğini temsil eder. ??
+//// kullanıcı güncelleme isteği

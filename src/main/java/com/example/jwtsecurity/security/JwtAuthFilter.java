@@ -24,7 +24,6 @@ public class JwtAuthFilter extends OncePerRequestFilter {
     private final CustomUserDetailsService userDetailsService;
     private final String secretKey;
 
-    // lombok yerine manuel constructor kullanıldı
     public JwtAuthFilter(CustomUserDetailsService userDetailsService, 
                         @Value("${jwt.secret}") String secretKey) {
         this.userDetailsService = userDetailsService;
@@ -37,10 +36,10 @@ public class JwtAuthFilter extends OncePerRequestFilter {
 
         String path = request.getServletPath();
         String requestURI = request.getRequestURI();
-        // debug için temel yol ve metod bilgisi yazdırılır
+        // debug için method
         System.out.println("JWT Filter - Path: " + path + ", URI: " + requestURI + ", Method: " + request.getMethod());
         
-        // Sadece login ve register endpoint'leri permitAll
+        // sadece login ve register endpointleri permitAll
         if (path.equals("/api/auth/login") || path.equals("/api/auth/register") || 
             requestURI.equals("/api/auth/login") || requestURI.equals("/api/auth/register") ||
             path.startsWith("/swagger-ui") || path.startsWith("/v3/api-docs") ||
@@ -53,7 +52,6 @@ public class JwtAuthFilter extends OncePerRequestFilter {
 
         String authHeader = request.getHeader("Authorization");
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
-            // Header yoksa zinciri devam ettir - permitAll endpoint'leri için gerekli
             chain.doFilter(request, response);
             return;
         }
@@ -68,8 +66,6 @@ public class JwtAuthFilter extends OncePerRequestFilter {
             auth.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
             SecurityContextHolder.getContext().setAuthentication(auth);
         } catch (Exception ex) {
-            // Token geçersizse güvenlik bağlamını temizle ve zinciri devam ettir
-            // AuthenticationEntryPoint devreye girecek
             SecurityContextHolder.clearContext();
             chain.doFilter(request, response);
             return;

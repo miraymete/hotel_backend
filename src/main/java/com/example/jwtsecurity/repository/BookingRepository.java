@@ -14,33 +14,33 @@ import java.util.List;
 @Repository
 public interface BookingRepository extends JpaRepository<Booking, Long> {
     
-    // Kullanıcının tüm rezervasyonlarını bul
+    // tüm rezervasyonları bul
     Page<Booking> findByUser(User user, Pageable pageable);
     
-    // Kullanıcının rezervasyonlarını bul
+    // kullanıcının rezervo
     List<Booking> findByUser(User user);
     
-    // Booking türüne göre rezervasyonları bul
+    // booking türüne göre 
     List<Booking> findByBookingType(Booking.BookingType bookingType);
     
-    // Booking durumuna göre rezervasyonları bul
     List<Booking> findByStatus(Booking.BookingStatus status);
     
-    // Kullanıcı ve booking türüne göre rezervasyonları bul
+    // kullanıcı ve bookin türüne göre
     List<Booking> findByUserAndBookingType(User user, Booking.BookingType bookingType);
     
-    // Kullanıcı ve duruma göre rezervasyonları bul
     List<Booking> findByUserAndStatus(User user, Booking.BookingStatus status);
     
-    // Item ID ve booking türüne göre rezervasyonları bul
     List<Booking> findByItemIdAndBookingType(Long itemId, Booking.BookingType bookingType);
     
-    // Son rezervasyonları bul (Admin için)
+    // son rezeer
     @Query("SELECT b FROM Booking b ORDER BY b.createdAt DESC")
     Page<Booking> findRecentBookings(Pageable pageable);
     
-    // Belirli tarih aralığındaki rezervasyonları bul
+    // tarih aralığında
     @Query("SELECT b FROM Booking b WHERE b.bookingDate BETWEEN :startDate AND :endDate")
     List<Booking> findByBookingDateBetween(@Param("startDate") String startDate, 
                                           @Param("endDate") String endDate);
+    
+    @Query("SELECT b FROM Booking b WHERE b.user.id = :userId ORDER BY b.createdAt DESC")
+    List<Booking> findByUserId(@Param("userId") Long userId);
 }

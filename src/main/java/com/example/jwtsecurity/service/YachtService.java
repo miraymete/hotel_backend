@@ -1,18 +1,15 @@
 package com.example.jwtsecurity.service;
 
-import com.example.jwtsecurity.dto.YachtRequest;
-import com.example.jwtsecurity.dto.YachtResponse;
 import com.example.jwtsecurity.model.Yacht;
 import com.example.jwtsecurity.repository.YachtRepository;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
-import java.math.BigDecimal;
 import java.util.List;
+import java.util.Optional;
 
 @Service
+@Transactional
 public class YachtService {
 
     private final YachtRepository yachtRepository;
@@ -21,122 +18,84 @@ public class YachtService {
         this.yachtRepository = yachtRepository;
     }
 
-    // Tüm yatları listele
-    public List<YachtResponse> listAll() {
-        List<Yacht> yachts = yachtRepository.findAll();
-        return yachts.stream()
-                .map(this::convertToResponse)
-                .toList();
+    public List<Yacht> getAllActiveYachts() {
+        return yachtRepository.findByIsActiveTrue();
     }
 
-    // ID ile yacht bul
-    public YachtResponse getById(Long id) {
+    public Optional<Yacht> getYachtById(Long id) {
+        return yachtRepository.findById(id);
+    }
+
+    public List<Yacht> getYachtsByType(String type) {
+        return yachtRepository.findByTypeAndIsActiveTrue(type);
+    }
+
+    public List<Yacht> getYachtsByLocation(String location) {
+        return yachtRepository.findByLocationContainingIgnoreCaseAndIsActiveTrue(location);
+    }
+
+    public List<Yacht> getYachtsByPriceRange(java.math.BigDecimal minPrice, java.math.BigDecimal maxPrice) {
+        return yachtRepository.findByBasePriceBetweenAndIsActiveTrue(minPrice, maxPrice);
+    }
+
+    public Yacht createYacht(Yacht yacht) {
+        return yachtRepository.save(yacht);
+    }
+
+    public Yacht updateYacht(Long id, Yacht yacht) {
+        Yacht existingYacht = yachtRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Yacht not found with id: " + id));
+        
+        existingYacht.setName(yacht.getName());
+        existingYacht.setDescription(yacht.getDescription());
+        existingYacht.setLocation(yacht.getLocation());
+        existingYacht.setType(yacht.getType());
+        existingYacht.setYachtLength(yacht.getYachtLength());
+        existingYacht.setMaxCapacity(yacht.getMaxCapacity());
+        existingYacht.setDurationHours(yacht.getDurationHours());
+        existingYacht.setBasePrice(yacht.getBasePrice());
+        existingYacht.setCurrency(yacht.getCurrency());
+        existingYacht.setRating(yacht.getRating());
+        existingYacht.setReviewCount(yacht.getReviewCount());
+        existingYacht.setImageUrls(yacht.getImageUrls());
+        existingYacht.setAmenities(yacht.getAmenities());
+        existingYacht.setCaptainIncluded(yacht.getCaptainIncluded());
+        existingYacht.setFuelIncluded(yacht.getFuelIncluded());
+        
+        return yachtRepository.save(existingYacht);
+    }
+
+    // sil
+    public void deleteYacht(Long id) {
         Yacht yacht = yachtRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Yacht not found with id: " + id));
-        return convertToResponse(yacht);
+        
+        yacht.setIsActive(false);
+        yachtRepository.save(yacht);
     }
 
-    // Kategoriye göre yatları bul
-    public Page<YachtResponse> findByCategory(String category, int page, int size) {
-        Pageable pageable = PageRequest.of(page, size);
-        Page<Yacht> yachts = yachtRepository.findByCategory(category, pageable);
-        return yachts.map(this::convertToResponse);
-    }
-
-    // Önerilen yatları bul
-    public List<YachtResponse> getRecommended() {
-        List<Yacht> yachts = yachtRepository.findByIsRecommendedTrue();
-        return yachts.stream()
-                .map(this::convertToResponse)
-                .toList();
-    }
-
-    // Arama
-    public Page<YachtResponse> search(String query, BigDecimal minPrice, BigDecimal maxPrice, int page, int size) {
-        Pageable pageable = PageRequest.of(page, size);
-        Page<Yacht> yachts = yachtRepository.searchYachts(query, minPrice, maxPrice, pageable);
-        return yachts.map(this::convertToResponse);
-    }
-
-    // Kategori ve fiyat aralığına göre arama
-    public Page<YachtResponse> findByCategoryAndPrice(String category, BigDecimal minPrice, BigDecimal maxPrice, int page, int size) {
-        Pageable pageable = PageRequest.of(page, size);
-        Page<Yacht> yachts = yachtRepository.findByCategoryAndPriceBetween(category, minPrice, maxPrice, pageable);
-        return yachts.map(this::convertToResponse);
-    }
-
-    // Yeni yacht oluştur (Admin)
-    public YachtResponse create(YachtRequest request) {
-        Yacht yacht = new Yacht();
-        yacht.setName(request.getName());
-        yacht.setDescription(request.getDescription());
-        yacht.setLocation(request.getLocation());
-        yacht.setCategory(request.getCategory());
-        yacht.setCapacity(request.getCapacity());
-        yacht.setLength(request.getLength());
-        yacht.setPrice(request.getPrice());
-        yacht.setCurrency(request.getCurrency());
-        yacht.setRatingScore(request.getRatingScore());
-        yacht.setRatingLabel(request.getRatingLabel());
-        yacht.setReviewCount(request.getReviewCount());
-        yacht.setImageUrl(request.getImageUrl());
-        yacht.setIsRecommended(request.getIsRecommended());
-        yacht.setTags(request.getTags());
-
-        Yacht savedYacht = yachtRepository.save(yacht);
-        return convertToResponse(savedYacht);
-    }
-
-    // Yacht güncelle (Admin)
-    public YachtResponse update(Long id, YachtRequest request) {
-        Yacht yacht = yachtRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Yacht not found with id: " + id));
-
-        yacht.setName(request.getName());
-        yacht.setDescription(request.getDescription());
-        yacht.setLocation(request.getLocation());
-        yacht.setCategory(request.getCategory());
-        yacht.setCapacity(request.getCapacity());
-        yacht.setLength(request.getLength());
-        yacht.setPrice(request.getPrice());
-        yacht.setCurrency(request.getCurrency());
-        yacht.setRatingScore(request.getRatingScore());
-        yacht.setRatingLabel(request.getRatingLabel());
-        yacht.setReviewCount(request.getReviewCount());
-        yacht.setImageUrl(request.getImageUrl());
-        yacht.setIsRecommended(request.getIsRecommended());
-        yacht.setTags(request.getTags());
-
-        Yacht updatedYacht = yachtRepository.save(yacht);
-        return convertToResponse(updatedYacht);
-    }
-
-    // Yacht sil (Admin)
-    public void delete(Long id) {
-        if (!yachtRepository.existsById(id)) {
-            throw new RuntimeException("Yacht not found with id: " + id);
+    public List<Yacht> searchYachts(String query, String type, java.math.BigDecimal minPrice, java.math.BigDecimal maxPrice) {
+        if (query != null && !query.trim().isEmpty()) {
+            return yachtRepository.findByNameContainingIgnoreCaseAndIsActiveTrue(query);
         }
-        yachtRepository.deleteById(id);
+        
+        if (type != null && !type.trim().isEmpty()) {
+            return getYachtsByType(type);
+        }
+        
+        if (minPrice != null && maxPrice != null) {
+            return getYachtsByPriceRange(minPrice, maxPrice);
+        }
+        
+        return getAllActiveYachts();
     }
 
-    // Yacht entity'sini YachtResponse'a dönüştür
-    private YachtResponse convertToResponse(Yacht yacht) {
-        return new YachtResponse(
-                yacht.getId(),
-                yacht.getName(),
-                yacht.getDescription(),
-                yacht.getLocation(),
-                yacht.getCategory(),
-                yacht.getCapacity(),
-                yacht.getLength(),
-                yacht.getPrice(),
-                yacht.getCurrency(),
-                yacht.getRatingScore(),
-                yacht.getRatingLabel(),
-                yacht.getReviewCount(),
-                yacht.getImageUrl(),
-                yacht.getIsRecommended(),
-                yacht.getTags()
-        );
+    public List<String> getDistinctTypes() {
+        return yachtRepository.findDistinctTypes();
+
+    }
+
+    public List<String> getDistinctLocations() {
+        return yachtRepository.findDistinctLocations();
     }
 }

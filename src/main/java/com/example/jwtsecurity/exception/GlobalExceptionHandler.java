@@ -38,7 +38,7 @@ public class GlobalExceptionHandler {
         response.put("message", ex.getMessage());
         response.put("exception", ex.getClass().getSimpleName());
         
-        // Debug için stack trace ekle (production'da kaldır)
+        // debug için stack trace araştır ama
         response.put("stackTrace", ex.getStackTrace());
         
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);

@@ -1,4 +1,3 @@
-// src/main/java/com/example/jwtsecurity/dto/ResetPasswordRequest.java
 package com.example.jwtsecurity.dto;
 
 import lombok.Data;
@@ -10,4 +9,4 @@ public class ResetPasswordRequest {
     public String getNewPassword() { return newPassword; }
     public void setNewPassword(String newPassword) { this.newPassword = newPassword; }
 }
-// Bu sınıf, şifre sıfırlama isteğini temsil eder.
+// şifre sıfırlama isteği

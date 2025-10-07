@@ -13,8 +13,7 @@ import org.springframework.stereotype.Service;
 public class CustomUserDetailsService implements UserDetailsService {
 
     @Autowired
-    private UserRepository userRepository; // UserRepository, UserDetailsService arayüzünü uygulayan sınıfın bağımlılığı
-    @Override
+    private UserRepository userRepository; 
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
         User user = userRepository.findByUsername(username)
                 .orElseThrow(() ->
@@ -23,4 +22,4 @@ public class CustomUserDetailsService implements UserDetailsService {
         return new CustomUserDetails(user);
     }
 }
-// Bu sınıf, UserDetailsService arayüzünü uygulayarak kullanıcı bilgilerini yükler.
+// UserDetailsService arayüzünü uygulayarak kullanıcı bilgilerini yükleme

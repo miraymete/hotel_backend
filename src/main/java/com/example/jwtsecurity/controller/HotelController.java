@@ -1,77 +1,115 @@
 package com.example.jwtsecurity.controller;
 
-import com.example.jwtsecurity.dto.HotelRequest;
-import com.example.jwtsecurity.dto.HotelResponse;
+import com.example.jwtsecurity.dto.HotelBookingRequest;
+import com.example.jwtsecurity.model.Hotel;
+import com.example.jwtsecurity.model.Room;
 import com.example.jwtsecurity.service.HotelService;
-import jakarta.validation.Valid;
-import org.springframework.data.domain.Page;
-import org.springframework.http.*;
+import com.example.jwtsecurity.service.BookingService;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
-import java.math.BigDecimal;
+import jakarta.validation.Valid;
 import java.util.List;
 import java.util.Map;
 
+// otel işlemleri için
 @RestController
 @RequestMapping("/api/hotels")
+@CrossOrigin(origins = {
+    "http://localhost:3000",
+    "http://localhost:5173",
+    "http://localhost:5174",
+    "http://127.0.0.1:5173",
+    "http://127.0.0.1:5174",
+    "https://hotel-frontend-ts-zsjq.vercel.app"
+}, allowCredentials = "true")
 public class HotelController {
 
-    private final HotelService service;
+    private final HotelService hotelService;
+    private final BookingService bookingService;
 
-    public HotelController(HotelService service) {
-        this.service = service;
-    }
-    // son dakika soldaki kutu herkese açık
-    @GetMapping("/last-minute")
-    public Page<HotelResponse> lastMinute(@RequestParam(defaultValue = "0") int page,
-                                          @RequestParam(defaultValue = "10") int size) {
-        var p = service.lastMinute(page, size);
-        return p;
+    public HotelController(HotelService hotelService, BookingService bookingService) {
+        this.hotelService = hotelService;
+        this.bookingService = bookingService;
     }
 
-    // herkese açık
+    // tüm aktif oteller
     @GetMapping
-    public List<HotelResponse> list() {
-        return service.listAll();
+    public ResponseEntity<List<Hotel>> getAllHotels() {
+        List<Hotel> hotels = hotelService.getAllActiveHotels();
+        return ResponseEntity.ok(hotels);
     }
 
-    // herkese açık
     @GetMapping("/{id}")
-    public HotelResponse get(@PathVariable Long id) {
-        return service.getById(id);
+    public ResponseEntity<Hotel> getHotelById(@PathVariable Long id) {
+        return hotelService.getHotelById(id)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
     }
 
-    // admin
+    @GetMapping("/{id}/rooms")
+    public ResponseEntity<List<Room>> getHotelRooms(@PathVariable Long id) {
+        List<Room> rooms = hotelService.getHotelRooms(id);
+        return ResponseEntity.ok(rooms);
+    }
+
+    @GetMapping("/search")
+    public ResponseEntity<List<Hotel>> searchHotels(@RequestParam(required = false) String query,
+                                                   @RequestParam(required = false) String city,
+                                                   @RequestParam(required = false) String country,
+                                                   @RequestParam(required = false) java.math.BigDecimal minPrice,
+                                                   @RequestParam(required = false) java.math.BigDecimal maxPrice) {
+        List<Hotel> hotels = hotelService.searchHotels(query, city, country, minPrice, maxPrice);
+        return ResponseEntity.ok(hotels);
+    }
+
+    //şehirler
+    @GetMapping("/cities")
+    public ResponseEntity<List<String>> getCities() {
+        List<String> cities = hotelService.getDistinctCities();
+        return ResponseEntity.ok(cities);
+    }
+
+    //ülkeler
+    @GetMapping("/countries")
+    public ResponseEntity<List<String>> getCountries() {
+        List<String> countries = hotelService.getDistinctCountries();
+        return ResponseEntity.ok(countries);
+    }
+
+    @PostMapping("/{id}/book")
+    @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
+    public ResponseEntity<Object> bookHotel(@PathVariable Long id, 
+                                          @Valid @RequestBody HotelBookingRequest request) {
+        try {
+            var booking = bookingService.createHotelBooking(request, id);
+            return ResponseEntity.ok(booking);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        }
+    }
+
     @PostMapping
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<HotelResponse> create(@Valid @RequestBody HotelRequest req) {
-        return ResponseEntity.status(HttpStatus.CREATED).body(service.create(req));
+    public ResponseEntity<Hotel> createHotel(@Valid @RequestBody Hotel hotel) {
+        Hotel newHotel = hotelService.createHotel(hotel);
+        return ResponseEntity.ok(newHotel);
     }
 
-    // admin
+    // otel güncelle admin
     @PutMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
-    public HotelResponse update(@PathVariable Long id, @Valid @RequestBody HotelRequest req) {
-        return service.update(id, req);
-    }
-    // arama herkese açık
-    @GetMapping("/search")
-    public Page<HotelResponse> search(@RequestParam(required = false) String q,
-                                      @RequestParam(required = false) Integer minStars,
-                                      @RequestParam(required = false) Integer maxStars,
-                                      @RequestParam(required = false) BigDecimal minPrice,
-                                      @RequestParam(required = false) BigDecimal maxPrice,
-                                      @RequestParam(defaultValue = "0") int page,
-                                      @RequestParam(defaultValue = "12") int size) {
-        return service.search(q, minStars, maxStars, minPrice, maxPrice, page, size);
+    public ResponseEntity<Hotel> updateHotel(@PathVariable Long id, @Valid @RequestBody Hotel hotel) {
+        Hotel updatedHotel = hotelService.updateHotel(id, hotel);
+        return ResponseEntity.ok(updatedHotel);
     }
 
-    // admin
+    // otel sil admin
     @DeleteMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
-    public Map<String, String> delete(@PathVariable Long id) {
-        service.delete(id);
-        return Map.of("message", "Otel başarıyla silindi.");
+    public ResponseEntity<Void> deleteHotel(@PathVariable Long id) {
+        hotelService.deleteHotel(id);
+        return ResponseEntity.noContent().build();
     }
 }

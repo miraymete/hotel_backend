@@ -1,4 +1,3 @@
-// src/main/java/com/example/jwtsecurity/security/CustomUserDetails.java
 package com.example.jwtsecurity.security;
 
 import com.example.jwtsecurity.model.User;
@@ -18,7 +17,7 @@ public class CustomUserDetails implements UserDetails {
     public CustomUserDetails(User user) {
         this.username = user.getUsername();
         this.password = user.getPassword();
-        // hasRole('ADMIN') çalışsın diye ROLE_ prefix’i veriyoruz
+        //TAM ÇÖZEMEDİM BURAYI
         this.authorities = List.of(new SimpleGrantedAuthority("ROLE_" + user.getRole()));
     }
 
@@ -30,4 +29,3 @@ public class CustomUserDetails implements UserDetails {
     @Override public boolean isCredentialsNonExpired() { return true; }
     @Override public boolean isEnabled() { return true; }
 }
-// bu sınıf UserDetails arayüzünü uygulayarak kullanıcı bilgilerini ve yetkilerini sağlar

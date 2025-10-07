@@ -4,6 +4,7 @@ import com.example.jwtsecurity.model.Booking;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
+import java.math.BigDecimal;
 
 public class BookingRequest {
     
@@ -19,7 +20,7 @@ public class BookingRequest {
     @NotBlank(message = "Check-in date is required")
     private String checkInDate;
 
-    private String checkOutDate; // Tours için gerekli olmayabilir
+    private String checkOutDate;
 
     @NotBlank(message = "Booking date is required")
     private String bookingDate;
@@ -27,9 +28,13 @@ public class BookingRequest {
     @Positive(message = "Guest count must be positive")
     private Integer guestCount = 1;
 
+    @NotNull(message = "Total price is required")
+    private BigDecimal totalPrice;
+
+    private String currency = "TRY";
+
     private String notes;
 
-    // Constructors
     public BookingRequest() {}
 
     public BookingRequest(Booking.BookingType bookingType, Long itemId, String itemName,
@@ -42,7 +47,7 @@ public class BookingRequest {
         this.guestCount = guestCount;
     }
 
-    // Getters and Setters
+ 
     public Booking.BookingType getBookingType() { return bookingType; }
     public void setBookingType(Booking.BookingType bookingType) { this.bookingType = bookingType; }
 
@@ -63,6 +68,12 @@ public class BookingRequest {
 
     public Integer getGuestCount() { return guestCount; }
     public void setGuestCount(Integer guestCount) { this.guestCount = guestCount; }
+
+    public BigDecimal getTotalPrice() { return totalPrice; }
+    public void setTotalPrice(BigDecimal totalPrice) { this.totalPrice = totalPrice; }
+
+    public String getCurrency() { return currency; }
+    public void setCurrency(String currency) { this.currency = currency; }
 
     public String getNotes() { return notes; }
     public void setNotes(String notes) { this.notes = notes; }

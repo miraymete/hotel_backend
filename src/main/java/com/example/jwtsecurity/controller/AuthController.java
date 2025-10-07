@@ -19,7 +19,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 
-// auth controller jwt tabanlı giriş ve kayıt işlemleri
+// kimlik doğrulama kayıt işlemleri 
 @RestController
 @RequestMapping("/api/auth")
 @CrossOrigin(origins = {
@@ -32,14 +32,14 @@ import java.util.Optional;
 }, allowCredentials = "true")
 public class AuthController {
 
-    // bu controller login ve register için dto kullanır ve class tabanlı cevap döndürür
-    // success durumunda authresponse döndürülür error durumunda json map döndürülür
+    // login ve register için dto kullanılır 
+    // başarıda authresponse döner hatada sade json
 
     // spring security authentication manager
     private final AuthenticationManager authenticationManager;
-    // kullanıcı işlemleri için service
+    // kullanıcı işlemleri  service
     private final UserService userService;
-    // jwt token oluşturmak için utility
+    // jwt token üretmek için util
     private final JwtUtil jwtUtil;
     // veritabanı işlemleri için repository
     private final UserRepository userRepository;
@@ -54,41 +54,40 @@ public class AuthController {
         this.userRepository = userRepository;
     }
 
-    // login endpoint istek gövdesinden loginrequest alır doğrular ve jwt üretir
     @PostMapping("/login")
     public ResponseEntity<Object> login(@RequestBody LoginRequest loginRequest) {
 
-        // Username veya email ile kullanıcıyı bul
+        // username ya da  mail ile kullanıcıyı bul
         Optional<User> userOpt = userService.findByUsernameOrEmail(loginRequest.getUsername());
         User user = userOpt.orElseThrow(() -> new RuntimeException("Kullanıcı bulunamadı"));
 
-        // kullanıcı adı ve şifre ile authentication token oluştur
+ 
         Authentication authRequest =
                 UsernamePasswordAuthenticationToken.unauthenticated(
                         user.getUsername(), // JWT için username kullan
                         loginRequest.getPassword()
                 );
 
-        // spring security ile kullanıcı doğrulaması yap
+        //kullanıcı doğrulaması
         authenticationManager.authenticate(authRequest);
 
-        // doğrulama başarılı ise jwt token oluştur
+        //başarılı ise jwt token 
         String token = jwtUtil.generateToken(user.getUsername());
 
-        // UserResponseDto oluştur (tüm profil bilgileri ile)
+   
         UserResponseDto userDto = userService.convertToDto(user);
         
-        // auth response oluştur ve frontende gönder
+        // response oluşturfrontende gönder
         AuthResponse authResponse = new AuthResponse(token, userDto);
 
         return ResponseEntity.ok(authResponse);
     }
 
-    // register endpoint yeni kullanıcı oluşturur ve jwt ile birlikte döner
+
     @PostMapping("/register")
     public ResponseEntity<Object> register(@Valid @RequestBody RegisterRequest request) {
         try {
-            System.out.println("=== REGISTER DEBUG ===");
+            System.out.println("kayıt debug");
             System.out.println("Request: " + request);
             System.out.println("FullName: " + request.getFullName());
             System.out.println("Email: " + request.getEmail());
@@ -96,25 +95,21 @@ public class AuthController {
             System.out.println("Username (auto-generated): " + request.getUsername());
             System.out.println("Role: " + request.getRole());
             
-            // yeni kullanıcıyı veritabanına kaydet
+            //eni kullanıcıyı veritabanına kaydet
             userService.register(request);
             
-            // kayıt sonrası otomatik giriş için jwt token oluştur
+            //otomatik giriş için jwt token üret
             String token = jwtUtil.generateToken(request.getUsername());
             
-            // kayıt edilen kullanıcının bilgilerini veritabanından getir
             Optional<User> userOpt = userRepository.findByUsername(request.getUsername());
             User user = userOpt.orElseThrow(() -> new RuntimeException("Kullanıcı bulunamadı"));
 
-            // UserResponseDto oluştur (tüm profil bilgileri ile)
             UserResponseDto userDto = userService.convertToDto(user);
             
-            // auth response oluştur ve frontende gönder
             AuthResponse authResponse = new AuthResponse(token, userDto);
 
             return ResponseEntity.ok(authResponse);
         } catch (Exception e) {
-            // hata durumunda sade bir hata jsonu döndür
             Map<String, Object> errorResponse = new HashMap<>();
             errorResponse.put("error", true);
             errorResponse.put("message", e.getMessage());
@@ -122,14 +117,39 @@ public class AuthController {
         }
     }
 
-    // Test endpoint - JWT authentication test için
-    @GetMapping("/test")
-    public ResponseEntity<Map<String, Object>> testEndpoint(Authentication authentication) {
-        Map<String, Object> response = new HashMap<>();
-        response.put("message", "JWT Authentication successful!");
-        response.put("authenticated", authentication.isAuthenticated());
-        response.put("username", authentication.getName());
-        response.put("authorities", authentication.getAuthorities());
-        return ResponseEntity.ok(response);
-    }
+    // jwt auth test endpointi
+               @GetMapping("/test")
+               public ResponseEntity<Map<String, Object>> testEndpoint(Authentication authentication) {
+                   Map<String, Object> response = new HashMap<>();
+                   response.put("message", "JWT Authentication successful!");
+                   response.put("authenticated", authentication.isAuthenticated());
+                   response.put("username", authentication.getName());
+                   response.put("authorities", authentication.getAuthorities());
+                   return ResponseEntity.ok(response);
+               }
+
+               @GetMapping("/account")
+               public ResponseEntity<Object> getAccountInfo(Authentication authentication) {
+                   try {
+                       String username = authentication.getName();
+                       Optional<User> userOpt = userRepository.findByUsername(username);
+                       
+                       if (userOpt.isEmpty()) {
+                           Map<String, Object> errorResponse = new HashMap<>();
+                           errorResponse.put("error", true);
+                           errorResponse.put("message", "User not found");
+                           return ResponseEntity.notFound().build();
+                       }
+                       
+                       User user = userOpt.get();
+                       UserResponseDto userDto = userService.convertToDto(user);
+                       
+                       return ResponseEntity.ok(userDto);
+                   } catch (Exception e) {
+                       Map<String, Object> errorResponse = new HashMap<>();
+                       errorResponse.put("error", true);
+                       errorResponse.put("message", e.getMessage());
+                       return ResponseEntity.badRequest().body(errorResponse);
+                   }
+               }
 }

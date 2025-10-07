@@ -21,6 +21,7 @@ public class UserController {
         this.service = service;
     }
 
+    // kullanıcıları listele admin
     @GetMapping
     @PreAuthorize("hasRole('ADMIN')")
     public List<UserResponse> list() {
@@ -53,6 +54,7 @@ public class UserController {
         return ResponseEntity.noContent().build();
     }
 
+    //şifre sıfırla
     @PostMapping("/{id}/reset-password")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<?> resetPassword(@PathVariable Long id,

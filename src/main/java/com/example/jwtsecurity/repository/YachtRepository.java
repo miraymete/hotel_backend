@@ -1,8 +1,6 @@
 package com.example.jwtsecurity.repository;
 
 import com.example.jwtsecurity.model.Yacht;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -14,31 +12,24 @@ import java.util.List;
 @Repository
 public interface YachtRepository extends JpaRepository<Yacht, Long> {
     
-    // Kategoriye göre yatları bul
-    Page<Yacht> findByCategory(String category, Pageable pageable);
+    List<Yacht> findByIsActiveTrue();
     
-    // Önerilen yatları bul
-    List<Yacht> findByIsRecommendedTrue();
+    List<Yacht> findByTypeAndIsActiveTrue(String type);
     
-    // Arama sorgusu
-    @Query("SELECT y FROM Yacht y WHERE " +
-           "(:q IS NULL OR LOWER(y.name) LIKE LOWER(CONCAT('%', :q, '%')) OR " +
-           "LOWER(y.description) LIKE LOWER(CONCAT('%', :q, '%')) OR " +
-           "LOWER(y.location) LIKE LOWER(CONCAT('%', :q, '%'))) AND " +
-           "(:minPrice IS NULL OR y.price >= :minPrice) AND " +
-           "(:maxPrice IS NULL OR y.price <= :maxPrice)")
-    Page<Yacht> searchYachts(@Param("q") String query, 
-                            @Param("minPrice") BigDecimal minPrice, 
-                            @Param("maxPrice") BigDecimal maxPrice, 
-                            Pageable pageable);
+    List<Yacht> findByLocationContainingIgnoreCaseAndIsActiveTrue(String location);
     
-    // Kategori ve fiyat aralığına göre arama
-    @Query("SELECT y FROM Yacht y WHERE " +
-           "(:category IS NULL OR y.category = :category) AND " +
-           "(:minPrice IS NULL OR y.price >= :minPrice) AND " +
-           "(:maxPrice IS NULL OR y.price <= :maxPrice)")
-    Page<Yacht> findByCategoryAndPriceBetween(@Param("category") String category,
-                                            @Param("minPrice") BigDecimal minPrice,
-                                            @Param("maxPrice") BigDecimal maxPrice,
-                                            Pageable pageable);
+    List<Yacht> findByBasePriceBetweenAndIsActiveTrue(BigDecimal minPrice, BigDecimal maxPrice);
+    
+    List<Yacht> findByNameContainingIgnoreCaseAndIsActiveTrue(String name);
+    
+    @Query("SELECT y FROM Yacht y WHERE y.isActive = true AND " +
+           "(LOWER(y.name) LIKE LOWER(CONCAT('%', :search, '%')) OR " +
+           "LOWER(y.location) LIKE LOWER(CONCAT('%', :search, '%')))")
+    List<Yacht> searchYachts(@Param("search") String search);
+    
+    @Query("SELECT DISTINCT y.type FROM Yacht y WHERE y.isActive = true ORDER BY y.type")
+    List<String> findDistinctTypes();
+    
+    @Query("SELECT DISTINCT y.location FROM Yacht y WHERE y.isActive = true ORDER BY y.location")
+    List<String> findDistinctLocations();
 }

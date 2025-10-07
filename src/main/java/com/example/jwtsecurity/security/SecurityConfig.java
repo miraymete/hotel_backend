@@ -4,21 +4,15 @@ import com.example.jwtsecurity.service.CustomUserDetailsService;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.beans.factory.annotation.Value;
-
-
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
-
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
-
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.springframework.http.HttpMethod;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 import org.springframework.security.web.SecurityFilterChain;
@@ -38,7 +32,7 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import java.util.List;
 
 
-// security config temel güvenlik kurallarını ve cors ayarlarını barındırır
+// temel güvenlik kuralları ve cors ayarları
 @Configuration
 @EnableWebSecurity
 @EnableMethodSecurity
@@ -53,16 +47,15 @@ public class SecurityConfig {
         this.jwtAuthFilter = jwtAuthFilter;
     }
 
-    // JwtAuthFilter artık @Component ile yönetiliyor, duplicate bean riski ortadan kalktı
+    // JwtAuthFilter component olarak yönetilir 
 
-    // şiifreleyici
+    // şifreleyici
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
 
-    // UserDetailsService zzaten CustomUserDetailsService
-    // bağlama
+    //custom kullanıcı servisi ile bağlanır
     @Bean
     public AuthenticationProvider authenticationProvider(
             CustomUserDetailsService userDetailsService,
@@ -74,27 +67,24 @@ public class SecurityConfig {
         return provider;
     }
 
-    // Global CORS konfigürasyonu - görsellerdeki tavsiyelere göre
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration cfg = new CorsConfiguration();
         
-        // Axios withCredentials: true -> allowCredentials zorunlu
         cfg.setAllowCredentials(true);
         
-        // Spesifik originler: vercel + local dev (wildcard yerine pattern)
         cfg.setAllowedOriginPatterns(List.of(
-            "https://*.vercel.app",  // Tüm vercel subdomain'leri
-            "http://localhost:*",    // Tüm localhost portları
-            "http://127.0.0.1:*"    // Tüm 127.0.0.1 portları
+            "https://*.vercel.app", 
+            "http://localhost:*",    
+            "http://127.0.0.1:*"   
         ));
         
-        // İzinli yöntemler
+        // izinli yöntemler
         cfg.setAllowedMethods(List.of(
             "GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"
         ));
         
-        // İzinli headerlar
+        // izinli headerlar
         cfg.setAllowedHeaders(List.of(
             "Authorization",
             "Content-Type", 
@@ -103,7 +93,6 @@ public class SecurityConfig {
             "X-Requested-With"
         ));
         
-        // Tarayıcıdan okunacak headerlar
         cfg.setExposedHeaders(List.of(
             "Authorization"
         ));
@@ -119,7 +108,6 @@ public class SecurityConfig {
         return config.getAuthenticationManager();
     }
 
-    // access denied handler json hata döndürür ve sebebi loglar
     @Bean
     public AccessDeniedHandler accessDeniedHandler() {
         return new AccessDeniedHandler() {
@@ -127,7 +115,6 @@ public class SecurityConfig {
             public void handle(HttpServletRequest request, HttpServletResponse response, 
                              AccessDeniedException accessDeniedException) throws IOException {
                 
-                // Log the access denied details
                 System.err.println("=== ACCESS DENIED ===");
                 System.err.println("Path: " + request.getRequestURI());
                 System.err.println("Method: " + request.getMethod());
@@ -144,8 +131,6 @@ public class SecurityConfig {
             }
         };
     }
-
-    // authentication entry point yetkisiz erişimde json hata döndürür
     @Bean
     public AuthenticationEntryPoint authenticationEntryPoint() {
         return new AuthenticationEntryPoint() {
@@ -153,7 +138,6 @@ public class SecurityConfig {
             public void commence(HttpServletRequest request, HttpServletResponse response, 
                                AuthenticationException authException) throws IOException {
                 
-                // Log the authentication failure details
                 System.err.println("=== AUTHENTICATION FAILED ===");
                 System.err.println("Path: " + request.getRequestURI());
                 System.err.println("Method: " + request.getMethod());
@@ -173,12 +157,13 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
+
                 .csrf(csrf -> csrf.disable())
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .addFilterBefore(jwtAuthFilter, org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter.class)
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
-                        // Public endpoints - kimlik doğrulama gerektirmez
+                        // public endpointler kimlik doğrulama istemez
                         .requestMatchers("/api/auth/login", "/api/auth/register").permitAll()
                         .requestMatchers("/swagger-ui/**", "/v3/api-docs/**").permitAll()
                         .requestMatchers("/h2-console/**").permitAll()
@@ -186,18 +171,18 @@ public class SecurityConfig {
                         .requestMatchers("/error", "/error/**").permitAll()
                         .requestMatchers(org.springframework.http.HttpMethod.OPTIONS, "/**").permitAll()
                         
-                        // Admin endpoints - sadece ADMIN rolü
+                        // admin endpointler sadece admin rolü
                         .requestMatchers("/api/bookings/all").hasRole("ADMIN")
                         .requestMatchers("/api/bookings/*/status").hasRole("ADMIN")
                         .requestMatchers("/api/users/**").hasRole("ADMIN")
                         
-                        // User endpoints - authenticated users
+                        //kimliği doğrulanmış kullanıcı
+                        .requestMatchers("/api/auth/account").authenticated()
                         .requestMatchers("/api/bookings/**").authenticated()
                         .requestMatchers("/api/hotels/**").authenticated()
                         .requestMatchers("/api/tours/**").authenticated()
                         .requestMatchers("/api/yachts/**").authenticated()
                         
-                        // Diğer tüm istekler için kimlik doğrulama gerekli
                         .anyRequest().authenticated()
                 )
                 .authenticationProvider(authenticationProvider(

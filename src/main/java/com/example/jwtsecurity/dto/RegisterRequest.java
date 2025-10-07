@@ -4,7 +4,7 @@ import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 
-// register request dto http isteğinden gelen veriyi taşır
+// register request dto http isteğinden gelen veriyi taşımaa 
 public class RegisterRequest {
 
     @NotBlank(message = "Full name is required")
@@ -21,7 +21,6 @@ public class RegisterRequest {
 
     private String role;
 
-    // Profil bilgileri
     private String phoneNumber;
     private String dateOfBirth;
 
@@ -34,7 +33,6 @@ public class RegisterRequest {
         this.role = "USER"; // Default role
     }
 
-    // Getters and Setters
     public String getFullName() {
         return fullName;
     }
@@ -88,7 +86,6 @@ public class RegisterRequest {
         return role != null ? role : "USER";
     }
 
-    // Username'i email'den otomatik oluştur (JWT için gerekli)
     public String getUsername() {
         return email != null ? email.split("@")[0] : null;
     }

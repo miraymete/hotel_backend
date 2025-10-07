@@ -32,4 +32,4 @@ public class UserResponse {
 }
 
 
-// Bu sınıf, kullanıcı bilgilerini içeren bir yanıt nesnesidir ???
+// kullanıcı bilgileri

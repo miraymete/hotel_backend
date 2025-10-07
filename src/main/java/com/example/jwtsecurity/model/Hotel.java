@@ -1,10 +1,10 @@
 package com.example.jwtsecurity.model;
 
 import jakarta.persistence.*;
-
 import java.math.BigDecimal;
-import java.util.HashSet;
-import java.util.Set;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(name = "hotels")
@@ -13,68 +13,122 @@ public class Hotel {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false) private String name;
-    @Column(nullable = false) private String city;
-    @Column(nullable = false) private int stars; // 1..5
-    // ---- EKLENEN ALANLAR ----
-    @Column private String region;        // ilçe bölge
-    @Column private String country;       // ülke
+    @Column(nullable = false)
+    private String name;
 
-    @Column(precision = 10, scale = 2)
-    private BigDecimal pricePerNight;     // gecelik fiyat
+    @Column(columnDefinition = "TEXT")
+    private String description;
 
-    @Column private String currency;      // TL EUR
-    @Column private Double ratingScore;   // 0..10
-    @Column private String ratingLabel;   // "Fevkalade"
-    @Column private Integer reviewCount;  // 3124 gibi
+    @Column(nullable = false)
+    private String location;
 
-    @Column private String imageUrl;      // kart görseli
-    @Column private Boolean lastMinute = false; // son dakika etiketi
+    @Column
+    private String address;
 
-    // basit özellik listesi (WiFi, Spa, vb.)
+    @Column
+    private String city;
+
+    @Column
+    private String country;
+
+    @Column(precision = 3, scale = 1)
+    private BigDecimal rating = BigDecimal.ZERO;
+
+    @Column(name = "star_count")
+    private Integer starCount = 0;
+
+    @Column(name = "base_price", precision = 10, scale = 2)
+    private BigDecimal basePrice;
+
+    @Column(name = "currency", length = 3)
+    private String currency = "TRY";
+
+    @ElementCollection
+    @CollectionTable(name = "hotel_images", joinColumns = @JoinColumn(name = "hotel_id"))
+    @Column(name = "image_url")
+    private List<String> imageUrls = new ArrayList<>();
+
     @ElementCollection
     @CollectionTable(name = "hotel_amenities", joinColumns = @JoinColumn(name = "hotel_id"))
     @Column(name = "amenity")
-    private Set<String> amenities = new HashSet<>();
+    private List<String> amenities = new ArrayList<>();
 
+    @OneToMany(mappedBy = "hotel", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private List<Room> rooms = new ArrayList<>();
 
-    public Hotel() {}
+    @Column(name = "is_active")
+    private Boolean isActive = true;
+
+    @Column(name = "created_at")
+    private LocalDateTime createdAt;
+
+    @Column(name = "updated_at")
+    private LocalDateTime updatedAt;
+
+    public Hotel() {
+        this.createdAt = LocalDateTime.now();
+        this.updatedAt = LocalDateTime.now();
+    }
+
+    @PrePersist
+    protected void onCreate() {
+        createdAt = LocalDateTime.now();
+        updatedAt = LocalDateTime.now();
+    }
+
+    @PreUpdate
+    protected void onUpdate() {
+        updatedAt = LocalDateTime.now();
+    }
 
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
+
     public String getName() { return name; }
     public void setName(String name) { this.name = name; }
+
+    public String getDescription() { return description; }
+    public void setDescription(String description) { this.description = description; }
+
+    public String getLocation() { return location; }
+    public void setLocation(String location) { this.location = location; }
+
+    public String getAddress() { return address; }
+    public void setAddress(String address) { this.address = address; }
+
     public String getCity() { return city; }
     public void setCity(String city) { this.city = city; }
-    public int getStars() { return stars; }
-    public void setStars(int stars) { this.stars = stars; }
-    public String getRegion() { return region; }
-    public void setRegion(String region) { this.region = region; }
 
     public String getCountry() { return country; }
     public void setCountry(String country) { this.country = country; }
 
-    public BigDecimal getPricePerNight() { return pricePerNight; }
-    public void setPricePerNight(BigDecimal pricePerNight) { this.pricePerNight = pricePerNight; }
+    public BigDecimal getRating() { return rating; }
+    public void setRating(BigDecimal rating) { this.rating = rating; }
+
+    public Integer getStarCount() { return starCount; }
+    public void setStarCount(Integer starCount) { this.starCount = starCount; }
+
+    public BigDecimal getBasePrice() { return basePrice; }
+    public void setBasePrice(BigDecimal basePrice) { this.basePrice = basePrice; }
 
     public String getCurrency() { return currency; }
     public void setCurrency(String currency) { this.currency = currency; }
 
-    public Double getRatingScore() { return ratingScore; }
-    public void setRatingScore(Double ratingScore) { this.ratingScore = ratingScore; }
+    public List<String> getImageUrls() { return imageUrls; }
+    public void setImageUrls(List<String> imageUrls) { this.imageUrls = imageUrls; }
 
-    public String getRatingLabel() { return ratingLabel; }
-    public void setRatingLabel(String ratingLabel) { this.ratingLabel = ratingLabel; }
+    public List<String> getAmenities() { return amenities; }
+    public void setAmenities(List<String> amenities) { this.amenities = amenities; }
 
-    public Integer getReviewCount() { return reviewCount; }
-    public void setReviewCount(Integer reviewCount) { this.reviewCount = reviewCount; }
+    public List<Room> getRooms() { return rooms; }
+    public void setRooms(List<Room> rooms) { this.rooms = rooms; }
 
-    public String getImageUrl() { return imageUrl; }
-    public void setImageUrl(String imageUrl) { this.imageUrl = imageUrl; }
+    public Boolean getIsActive() { return isActive; }
+    public void setIsActive(Boolean isActive) { this.isActive = isActive; }
 
-    public Boolean getLastMinute() { return lastMinute; }
-    public void setLastMinute(Boolean lastMinute) { this.lastMinute = lastMinute; }
+    public LocalDateTime getCreatedAt() { return createdAt; }
+    public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
 
-    public Set<String> getAmenities() { return amenities; }
-    public void setAmenities(Set<String> amenities) { this.amenities = amenities; }
+    public LocalDateTime getUpdatedAt() { return updatedAt; }
+    public void setUpdatedAt(LocalDateTime updatedAt) { this.updatedAt = updatedAt; }
 }

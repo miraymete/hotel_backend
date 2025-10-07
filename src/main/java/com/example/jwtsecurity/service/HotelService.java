@@ -1,107 +1,101 @@
 package com.example.jwtsecurity.service;
 
-import com.example.jwtsecurity.dto.HotelRequest;
-import com.example.jwtsecurity.dto.HotelResponse;
 import com.example.jwtsecurity.model.Hotel;
+import com.example.jwtsecurity.model.Room;
 import com.example.jwtsecurity.repository.HotelRepository;
+import com.example.jwtsecurity.repository.RoomRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import java.math.BigDecimal;
-
 
 import java.util.List;
-import java.util.NoSuchElementException;
+import java.util.Optional;
 
 @Service
 @Transactional
 public class HotelService {
 
-    private final HotelRepository repo;
+    private final HotelRepository hotelRepository;
+    private final RoomRepository roomRepository;
 
-    public HotelService(HotelRepository repo) { this.repo = repo; }
-
-    private HotelResponse toResponse(Hotel h) {
-        HotelResponse r = new HotelResponse(h.getId(), h.getName(), h.getCity(), h.getStars());
-        r.setRegion(h.getRegion());
-        r.setCountry(h.getCountry());
-        r.setPricePerNight(h.getPricePerNight());
-        r.setCurrency(h.getCurrency());
-        r.setRatingScore(h.getRatingScore());
-        r.setRatingLabel(h.getRatingLabel());
-        r.setReviewCount(h.getReviewCount());
-        r.setImageUrl(h.getImageUrl());
-        r.setAmenities(h.getAmenities());
-        r.setLastMinute(h.getLastMinute());
-        return r;
-        // otel bilgilerini yanıt olarak döndürme
+    public HotelService(HotelRepository hotelRepository, RoomRepository roomRepository) {
+        this.hotelRepository = hotelRepository;
+        this.roomRepository = roomRepository;
     }
 
-    @Transactional(readOnly = true)
-    public List<HotelResponse> listAll() {
-        return repo.findAll().stream().map(this::toResponse).toList();
-    } // otelleri listeleme
-
-    public Page<HotelResponse> lastMinute(int page, int size) {
-        return repo.findByLastMinuteTrue(PageRequest.of(page, size))
-                .map(this::toResponse);
+    public List<Hotel> getAllActiveHotels() {
+        return hotelRepository.findByIsActiveTrue();
     }
 
-    public Page<HotelResponse> search(String q,
-                                      Integer minStars, Integer maxStars,
-                                      BigDecimal minPrice, BigDecimal maxPrice,
-                                      int page, int size) {
-        return repo.search(q, minStars, maxStars, minPrice, maxPrice, PageRequest.of(page, size))
-                .map(this::toResponse);
+    public Optional<Hotel> getHotelById(Long id) {
+        return hotelRepository.findById(id);
     }
-     // findByLastMinuteTrue() ve search() çağrıları
-    public HotelResponse create(HotelRequest req) {
-        Hotel h = new Hotel();
-        h.setName(req.getName());
-        h.setCity(req.getCity());
-        h.setStars(req.getStars());
-        h.setRegion(req.getRegion());
-        h.setCountry(req.getCountry());
-        h.setPricePerNight(req.getPricePerNight());
-        h.setCurrency(req.getCurrency());
-        h.setRatingScore(req.getRatingScore());
-        h.setRatingLabel(req.getRatingLabel());
-        h.setReviewCount(req.getReviewCount());
-        h.setImageUrl(req.getImageUrl());
-        if (req.getAmenities() != null) h.setAmenities(req.getAmenities());
-        h.setLastMinute(Boolean.TRUE.equals(req.getLastMinute()));
-        return toResponse(repo.save(h));
-    } // otel ekleme
 
-    @Transactional(readOnly = true)
-    public HotelResponse getById(Long id) {
-        Hotel h = repo.findById(id)
-                .orElseThrow(() -> new NoSuchElementException("Otel bulunamadı."));
-        return toResponse(h);
-    } // otel bilgilerini ID ile alma
+    public List<Room> getHotelRooms(Long hotelId) {
+        return roomRepository.findByHotelId(hotelId);
+    }
 
-    public HotelResponse update(Long id, HotelRequest req) {
-        Hotel h = repo.findById(id)
-                .orElseThrow(() -> new NoSuchElementException("Otel bulunamadı."));
-        h.setName(req.getName());
-        h.setCity(req.getCity());
-        h.setStars(req.getStars());
-        h.setRegion(req.getRegion());
-        h.setCountry(req.getCountry());
-        h.setPricePerNight(req.getPricePerNight());
-        h.setCurrency(req.getCurrency());
-        h.setRatingScore(req.getRatingScore());
-        h.setRatingLabel(req.getRatingLabel());
-        h.setReviewCount(req.getReviewCount());
-        h.setImageUrl(req.getImageUrl());
-        if (req.getAmenities() != null) h.setAmenities(req.getAmenities());
-        h.setLastMinute(Boolean.TRUE.equals(req.getLastMinute()));
-        return toResponse(repo.save(h));
-    } // otel bilgilerini güncelleme
+    public List<Room> getAvailableRooms(Long hotelId, Integer guestCount) {
+        return roomRepository.findAvailableRoomsByHotelAndGuestCount(hotelId, guestCount);
+    }
 
-    public void delete(Long id) {
-        if (!repo.existsById(id)) throw new NoSuchElementException("Otel bulunamadı.");
-        repo.deleteById(id);
-    } // otel silme
+    public List<Hotel> searchHotels(String query, String city, String country, 
+                                   java.math.BigDecimal minPrice, java.math.BigDecimal maxPrice) {
+        if (query != null && !query.trim().isEmpty()) {
+            return hotelRepository.searchHotels(query);
+        }
+        
+        if (city != null && !city.trim().isEmpty()) {
+            return hotelRepository.findByCityAndIsActiveTrue(city);
+        }
+        
+        if (country != null && !country.trim().isEmpty()) {
+            return hotelRepository.findByCountryAndIsActiveTrue(country);
+        }
+        
+        if (minPrice != null && maxPrice != null) {
+            return hotelRepository.findByPriceRange(minPrice, maxPrice);
+        }
+        
+        return getAllActiveHotels();
+    }
+
+    public List<String> getDistinctCities() {
+        return hotelRepository.findDistinctCities();
+    }
+
+    public List<String> getDistinctCountries() {
+        return hotelRepository.findDistinctCountries();
+    }
+
+    public Hotel createHotel(Hotel hotel) {
+        return hotelRepository.save(hotel);
+    }
+
+    public Hotel updateHotel(Long id, Hotel hotel) {
+        Hotel existingHotel = hotelRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Hotel not found with id: " + id));
+        
+        existingHotel.setName(hotel.getName());
+        existingHotel.setDescription(hotel.getDescription());
+        existingHotel.setLocation(hotel.getLocation());
+        existingHotel.setAddress(hotel.getAddress());
+        existingHotel.setCity(hotel.getCity());
+        existingHotel.setCountry(hotel.getCountry());
+        existingHotel.setRating(hotel.getRating());
+        existingHotel.setStarCount(hotel.getStarCount());
+        existingHotel.setBasePrice(hotel.getBasePrice());
+        existingHotel.setCurrency(hotel.getCurrency());
+        existingHotel.setImageUrls(hotel.getImageUrls());
+        existingHotel.setAmenities(hotel.getAmenities());
+        
+        return hotelRepository.save(existingHotel);
+    }
+
+    public void deleteHotel(Long id) {
+        Hotel hotel = hotelRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Hotel not found with id: " + id));
+        
+        hotel.setIsActive(false);
+        hotelRepository.save(hotel);
+    }
 }

@@ -20,7 +20,6 @@ public class YachtResponse {
     private Boolean isRecommended;
     private Set<String> tags;
 
-    // Constructors
     public YachtResponse() {}
 
     public YachtResponse(Long id, String name, String description, String location, String category,
@@ -44,7 +43,6 @@ public class YachtResponse {
         this.tags = tags;
     }
 
-    // Getters and Setters
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
 
@@ -59,6 +57,7 @@ public class YachtResponse {
 
     public String getCategory() { return category; }
     public void setCategory(String category) { this.category = category; }
+    
 
     public String getCapacity() { return capacity; }
     public void setCapacity(String capacity) { this.capacity = capacity; }
