@@ -54,7 +54,7 @@ public class AuthController {
         this.userRepository = userRepository;
     }
 
-    @PostMapping("/login")
+    @PostMapping(value = "/login", consumes = "application/json", produces = "application/json")
     public ResponseEntity<Object> login(@RequestBody LoginRequest loginRequest) {
 
         // username ya da  mail ile kullanıcıyı bul
@@ -84,7 +84,7 @@ public class AuthController {
     }
 
 
-    @PostMapping("/register")
+    @PostMapping(value = "/register", consumes = "application/json", produces = "application/json")
     public ResponseEntity<Object> register(@Valid @RequestBody RegisterRequest request) {
         try {
             System.out.println("kayıt debug");
@@ -118,7 +118,7 @@ public class AuthController {
     }
 
     // jwt auth test endpointi
-               @GetMapping("/test")
+               @GetMapping(value = "/test", produces = "application/json")
                public ResponseEntity<Map<String, Object>> testEndpoint(Authentication authentication) {
                    Map<String, Object> response = new HashMap<>();
                    response.put("message", "JWT Authentication successful!");
@@ -128,7 +128,7 @@ public class AuthController {
                    return ResponseEntity.ok(response);
                }
 
-               @GetMapping("/account")
+               @GetMapping(value = "/account", produces = "application/json")
                public ResponseEntity<Object> getAccountInfo(Authentication authentication) {
                    try {
                        String username = authentication.getName();
