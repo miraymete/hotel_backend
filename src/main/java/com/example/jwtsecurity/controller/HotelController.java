@@ -13,6 +13,8 @@ import jakarta.validation.Valid;
 import java.util.List;
 import java.util.Map;
 
+//TODO: Bir admin panel tasarla
+
 // otel işlemleri için
 @RestController
 @RequestMapping("/api/hotels")

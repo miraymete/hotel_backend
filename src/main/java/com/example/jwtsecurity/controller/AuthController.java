@@ -6,7 +6,7 @@ import com.example.jwtsecurity.dto.AuthResponse;
 import com.example.jwtsecurity.dto.UserResponseDto;
 import com.example.jwtsecurity.model.User;
 import com.example.jwtsecurity.repository.UserRepository;
-import com.example.jwtsecurity.security.JwtUtil;
+import com.example.jwtsecurity.utils.JwtUtil;
 import com.example.jwtsecurity.service.UserService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
