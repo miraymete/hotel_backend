@@ -1,4 +1,4 @@
-package com.example.jwtsecurity.security;
+package com.example.jwtsecurity.config;
 
 import io.swagger.v3.oas.models.security.SecurityRequirement;
 import io.swagger.v3.oas.models.Components;

@@ -1,4 +1,4 @@
-package com.example.jwtsecurity.security;
+package com.example.jwtsecurity.filter;
 
 import com.example.jwtsecurity.service.CustomUserDetailsService;
 import io.jsonwebtoken.Claims;

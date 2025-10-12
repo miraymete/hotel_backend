@@ -1,5 +1,6 @@
-package com.example.jwtsecurity.security;
+package com.example.jwtsecurity.config;
 
+import com.example.jwtsecurity.filter.JwtAuthFilter;
 import com.example.jwtsecurity.service.CustomUserDetailsService;
 
 import org.springframework.context.annotation.Bean;
@@ -114,7 +115,8 @@ public class SecurityConfig {
             @Override
             public void handle(HttpServletRequest request, HttpServletResponse response, 
                              AccessDeniedException accessDeniedException) throws IOException {
-                
+
+                // TODO: Log4j logger kullanılabilir
                 System.err.println("=== ACCESS DENIED ===");
                 System.err.println("Path: " + request.getRequestURI());
                 System.err.println("Method: " + request.getMethod());
@@ -137,7 +139,9 @@ public class SecurityConfig {
             @Override
             public void commence(HttpServletRequest request, HttpServletResponse response, 
                                AuthenticationException authException) throws IOException {
-                
+
+                // TODO: Log4j logger kullanılabilir
+
                 System.err.println("=== AUTHENTICATION FAILED ===");
                 System.err.println("Path: " + request.getRequestURI());
                 System.err.println("Method: " + request.getMethod());
@@ -170,12 +174,12 @@ public class SecurityConfig {
                         .requestMatchers("/actuator/health").permitAll()
                         .requestMatchers("/error", "/error/**").permitAll()
                         .requestMatchers(org.springframework.http.HttpMethod.OPTIONS, "/**").permitAll()
-                        
+
                         // admin endpointler sadece admin rolü
                         .requestMatchers("/api/bookings/all").hasRole("ADMIN")
                         .requestMatchers("/api/bookings/*/status").hasRole("ADMIN")
                         .requestMatchers("/api/users/**").hasRole("ADMIN")
-                        
+
                         //kimliği doğrulanmış kullanıcı
                         .requestMatchers("/api/auth/account").authenticated()
                         .requestMatchers("/api/bookings/**").authenticated()
