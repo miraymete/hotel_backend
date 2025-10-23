@@ -31,6 +31,8 @@ import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 import java.util.List;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 
 // temel güvenlik kuralları ve cors ayarları
@@ -39,6 +41,8 @@ import java.util.List;
 @EnableMethodSecurity
 public class SecurityConfig {
 
+    private static final Logger logger = LoggerFactory.getLogger(SecurityConfig.class);
+    
     private final CustomUserDetailsService userDetailsService;
     private final JwtAuthFilter jwtAuthFilter;
 
@@ -116,14 +120,13 @@ public class SecurityConfig {
             public void handle(HttpServletRequest request, HttpServletResponse response, 
                              AccessDeniedException accessDeniedException) throws IOException {
 
-                // TODO: Log4j logger kullanılabilir
-                System.err.println("=== ACCESS DENIED ===");
-                System.err.println("Path: " + request.getRequestURI());
-                System.err.println("Method: " + request.getMethod());
-                System.err.println("Origin: " + request.getHeader("Origin"));
-                System.err.println("User-Agent: " + request.getHeader("User-Agent"));
-                System.err.println("Reason: " + accessDeniedException.getMessage());
-                System.err.println("=====================");
+                // structured logging with Log4j2
+                logger.warn("Access Denied - Path: {}, Method: {}, Origin: {}, User-Agent: {}, Reason: {}", 
+                    request.getRequestURI(), 
+                    request.getMethod(), 
+                    request.getHeader("Origin"), 
+                    request.getHeader("User-Agent"), 
+                    accessDeniedException.getMessage());
                 
                 response.setStatus(HttpServletResponse.SC_FORBIDDEN);
                 response.setContentType("application/json");
@@ -140,14 +143,12 @@ public class SecurityConfig {
             public void commence(HttpServletRequest request, HttpServletResponse response, 
                                AuthenticationException authException) throws IOException {
 
-                // TODO: Log4j logger kullanılabilir
-
-                System.err.println("=== AUTHENTICATION FAILED ===");
-                System.err.println("Path: " + request.getRequestURI());
-                System.err.println("Method: " + request.getMethod());
-                System.err.println("Origin: " + request.getHeader("Origin"));
-                System.err.println("Reason: " + authException.getMessage());
-                System.err.println("=============================");
+                // structured logging with Log4j2
+                logger.error("Authentication Failed - Path: {}, Method: {}, Origin: {}, Reason: {}", 
+                    request.getRequestURI(), 
+                    request.getMethod(), 
+                    request.getHeader("Origin"), 
+                    authException.getMessage());
                 
                 response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
                 response.setContentType("application/json");

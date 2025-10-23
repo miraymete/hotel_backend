@@ -14,6 +14,8 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 
@@ -21,6 +23,8 @@ import java.io.IOException;
 @Component
 public class JwtAuthFilter extends OncePerRequestFilter {
 
+    private static final Logger logger = LoggerFactory.getLogger(JwtAuthFilter.class);
+    
     private final CustomUserDetailsService userDetailsService;
     private final String secretKey;
 
@@ -36,8 +40,8 @@ public class JwtAuthFilter extends OncePerRequestFilter {
 
         String path = request.getServletPath();
         String requestURI = request.getRequestURI();
-        // debug için method
-        System.out.println("JWT Filter - Path: " + path + ", URI: " + requestURI + ", Method: " + request.getMethod());
+        
+        logger.debug("JWT Filter - Path: {}, URI: {}, Method: {}", path, requestURI, request.getMethod());
         
         // sadece login ve register endpointleri permitAll
         if (path.equals("/api/auth/login") || path.equals("/api/auth/register") || 
@@ -45,7 +49,7 @@ public class JwtAuthFilter extends OncePerRequestFilter {
             path.startsWith("/swagger-ui") || path.startsWith("/v3/api-docs") ||
             requestURI.startsWith("/swagger-ui") || requestURI.startsWith("/v3/api-docs")) {
             // auth dışı yollar filtreyi atlar
-            System.out.println("JWT Filter - Allowing path: " + path + " (URI: " + requestURI + ")");
+            logger.debug("JWT Filter - Allowing path: {} (URI: {})", path, requestURI);
             chain.doFilter(request, response);
             return;
         }
@@ -66,6 +70,7 @@ public class JwtAuthFilter extends OncePerRequestFilter {
             auth.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
             SecurityContextHolder.getContext().setAuthentication(auth);
         } catch (Exception ex) {
+            logger.warn("JWT Token validation failed: {}", ex.getMessage());
             SecurityContextHolder.clearContext();
             chain.doFilter(request, response);
             return;

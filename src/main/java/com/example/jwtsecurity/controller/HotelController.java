@@ -18,14 +18,6 @@ import java.util.Map;
 // otel işlemleri için
 @RestController
 @RequestMapping("/api/hotels")
-@CrossOrigin(origins = {
-    "http://localhost:3000",
-    "http://localhost:5173",
-    "http://localhost:5174",
-    "http://127.0.0.1:5173",
-    "http://127.0.0.1:5174",
-    "https://hotel-frontend-ts-zsjq.vercel.app"
-}, allowCredentials = "true")
 public class HotelController {
 
     private final HotelService hotelService;

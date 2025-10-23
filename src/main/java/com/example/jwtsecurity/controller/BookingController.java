@@ -17,15 +17,6 @@ import java.util.Map;
 // rezervo için endpointler
 @RestController
 @RequestMapping("/api/bookings")
-// TODO: buralari security config altinda belirttiginde gerek olmamali orayi fixleyebiliriz bunu kaldirip
-@CrossOrigin(origins = {
-    "http://localhost:3000",
-    "http://localhost:5173",
-    "http://localhost:5174",
-    "http://127.0.0.1:5173",
-    "http://127.0.0.1:5174",
-    "https://hotel-frontend-ts-zsjq.vercel.app"
-}, allowCredentials = "true")
 public class BookingController {
 
     private final BookingService bookingService;
